@@ -1,0 +1,23 @@
+{
+    "name": "icanhazstring/duck-pony",
+    "description": "Secret Duck Pony",
+    "type": "project",
+    "require": {
+        "lesstif/php-jira-rest-client": "^1.10",
+        "symfony/console": "^3.2",
+        "symfony/event-dispatcher": "^3.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.1"
+    },
+    "bin": [
+        "bin/dp"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "icanhazstring",
+            "email": "blubb0r05+github@gmail.com"
+        }
+    ]
+}
