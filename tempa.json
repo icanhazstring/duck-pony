@@ -1,0 +1,5 @@
+{
+  "fileExtensions": ["dist"],
+  "prefix": "${",
+  "suffix": "}"
+}

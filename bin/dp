@@ -1,9 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-use Tempa\Console\Command\InteractiveCommand;
-use Tempa\Console\Command\ScanCommand;
-use Tempa\Console\Command\SubstituteCommand;
+use duckpony\Console\Command\CleanBranchCommand;
 use Symfony\Component\Console\Application;
 
 if (is_dir($vendor = __DIR__ . '/../vendor')) {
@@ -27,4 +25,5 @@ if (!class_exists('Symfony\Component\Console\Application')) {
 }
 
 $app = new Application();
+$app->add(new CleanBranchCommand);
 $app->run();
