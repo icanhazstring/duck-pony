@@ -20,6 +20,7 @@ class CleanBranchCommand extends Command
     {
         $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
+        $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
 
         $this->setName('folder:clean')
             ->setDescription('Scan folder an clean branches')
@@ -39,6 +40,7 @@ EOT
         $folder = stream_resolve_include_path($folder);
 
         $status = $input->getOption('status');
+        $invert = $input->getOption('invert');
 
         var_dump($status);
 
@@ -69,9 +71,16 @@ EOT
                     $issueStatus = strtolower($issue->fields->status->name);
                     $status = strtolower($status);
 
-                    if ($status === $issueStatus) {
-                        $remove[] = $dir;
+                    if ($invert) {
+                        if ($status !== $issueStatus) {
+                            $remove[] = $dir;
+                        }
+                    } else {
+                        if ($status === $issueStatus) {
+                            $remove[] = $dir;
+                        }
                     }
+
                 }
             } catch (\Exception $e) {
                 $notfound[] = $dir;
