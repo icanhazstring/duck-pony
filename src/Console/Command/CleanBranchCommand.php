@@ -21,6 +21,7 @@ class CleanBranchCommand extends Command
         $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
+        $this->addOption('yes', 'y', InputOption::VALUE_NONE, 'Confirm questions with yes');
 
         $this->setName('folder:clean')
             ->setDescription('Scan folder an clean branches')
@@ -41,8 +42,7 @@ EOT
 
         $status = $input->getOption('status');
         $invert = $input->getOption('invert');
-
-        var_dump($status);
+        $yes = $input->getOption('yes');
 
         $finder = new Finder();
         $files = $finder->files()->in($folder);
@@ -103,7 +103,7 @@ EOT
 
         if (count($notfound) > 0) {
             $io->section('Found some non matching branches');
-            $delete = $io->confirm('Delete?');
+            $delete = $yes || $io->confirm('Delete?');
 
             if ($delete) {
                 foreach ($notfound as $dir) {
