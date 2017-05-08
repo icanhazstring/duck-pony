@@ -80,7 +80,6 @@ EOT
                             $remove[] = $dir;
                         }
                     }
-
                 }
             } catch (\Exception $e) {
                 $notfound[] = $dir;
@@ -112,5 +111,4 @@ EOT
             }
         }
     }
-
 }
