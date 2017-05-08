@@ -1,13 +1,7 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: andreas.froemer
- * Date: 08.05.2017
- * Time: 12:25
- */
+declare(strict_types=1);
 
 namespace duckpony\Console\Command;
-
 
 use Symfony\Component\Console\Command\Command;
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "8e8faa3fbe9bd13aa51843c12c2fa7e9",
+    "content-hash": "bcec844cdaf9d02165d9512c80844d01",
     "packages": [
         {
             "name": "icanhazstring/tempa-php",
@@ -100,6 +100,54 @@
                 "rest"
             ],
             "time": "2017-04-21T15:48:17+00:00"
+        },
+        {
+            "name": "mjanser/systemctl",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mjanser/php-systemctl.git",
+                "reference": "342a8c99f43a8b897b82ac749995644135801f17"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mjanser/php-systemctl/zipball/342a8c99f43a8b897b82ac749995644135801f17",
+                "reference": "342a8c99f43a8b897b82ac749995644135801f17",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0",
+                "symfony/process": "^3.0|^3.1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2.0",
+                "phpunit/phpunit": "^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SystemCtl\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPLv3"
+            ],
+            "authors": [
+                {
+                    "name": "Martin Janser",
+                    "email": "martin@duss-janser.ch"
+                }
+            ],
+            "description": "Library for managing systemd services using systemctl",
+            "homepage": "https://github.com/mjanser/php-systemctl",
+            "keywords": [
+                "systemd"
+            ],
+            "time": "2017-03-30T12:00:28+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -601,6 +649,55 @@
                 "shim"
             ],
             "time": "2016-11-14T01:06:16+00:00"
+        },
+        {
+            "name": "symfony/process",
+            "version": "v3.2.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/process.git",
+                "reference": "999c2cf5061e627e6cd551dc9ebf90dd1d11d9f0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/process/zipball/999c2cf5061e627e6cd551dc9ebf90dd1d11d9f0",
+                "reference": "999c2cf5061e627e6cd551dc9ebf90dd1d11d9f0",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5.9"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.2-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Process\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony Process Component",
+            "homepage": "https://symfony.com",
+            "time": "2017-04-12T14:13:17+00:00"
         },
         {
             "name": "symfony/yaml",
@@ -2212,7 +2309,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "mjanser/systemctl": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

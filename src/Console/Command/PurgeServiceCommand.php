@@ -10,12 +10,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Yaml\Yaml;
+use SystemCtl\CommandFailedException;
+use SystemCtl\Service;
 
-class CleanBranchCommand extends AbstractCommand
+class PurgeServiceCommand extends AbstractCommand
 {
     protected function configure()
     {
@@ -23,16 +24,16 @@ class CleanBranchCommand extends AbstractCommand
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
-        $this->addOption('yes', 'y', InputOption::VALUE_NONE, 'Confirm questions with yes');
         $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Config', $this->getRootPath() . '/config/config.yml');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force delete');
+        $this->addOption('name', 'sn', InputOption::VALUE_REQUIRED, 'Name of service');
 
-        $this->setName('folder:clean')
-            ->setDescription('Scan folder an clean branches')
+        $this->setName('folder:purge-service')
+            ->setDescription('Scan folder an purge services with same name')
             ->setHelp(
                 <<<EOT
 Scan folder iterate over sub folders and removes
-them under certain conditions
+try to remove services by same name
 EOT
             );
     }
@@ -47,8 +48,8 @@ EOT
         $status = $input->getOption('status');
         $invert = $input->getOption('invert');
         $force = $input->getOption('force');
-        $yes = $input->getOption('yes') ?: $force;
         $config = Yaml::parse(file_get_contents($input->getOption('config')));
+        $name = $input->getOption('name');
         $pattern = $input->getOption('pattern') ?? $config['pattern'];
 
         $finder = new Finder();
@@ -62,7 +63,6 @@ EOT
 
         $io->title('Scan folder ' . $folder . ' for outdated issues');
 
-        $fs = new Filesystem();
         $remove = [];
         $notfound = [];
 
@@ -111,21 +111,18 @@ EOT
         $io->progressStart(count($remove));
 
         foreach ($remove as $dir) {
-            $fs->remove($dir->getRealPath());
-            $io->progressAdvance();
+
+            try {
+                $service = new Service($name . $dir->getFilename());
+                $service->stop();
+
+                $io->progressAdvance();
+            } catch (CommandFailedException $e) {
+                var_dump($e);
+            }
+
         }
 
         $io->progressFinish();
-
-        if (count($notfound) > 0) {
-            $io->section('Found some non matching branches');
-            $delete = $yes || $io->confirm('Delete?');
-
-            if ($delete) {
-                foreach ($notfound as $dir) {
-                    $fs->remove($dir->getRealPath());
-                }
-            }
-        }
     }
 }

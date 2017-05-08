@@ -9,7 +9,8 @@
         "icanhazstring/tempa-php": "^1.1",
         "symfony/finder": "^3.2",
         "symfony/filesystem": "^3.2",
-        "symfony/yaml": "^3.2"
+        "symfony/yaml": "^3.2",
+        "mjanser/systemctl": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.1",
