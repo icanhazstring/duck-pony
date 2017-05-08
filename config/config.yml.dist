@@ -1,0 +1,4 @@
+hostname: ${host}
+username: ${username}
+password: ${password}
+pattern:  ${pattern}

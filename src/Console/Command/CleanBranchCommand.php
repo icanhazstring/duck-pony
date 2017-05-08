@@ -4,7 +4,6 @@ namespace duckpony\Console\Command;
 
 use JiraRestApi\Configuration\ArrayConfiguration;
 use JiraRestApi\Issue\IssueService;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -13,15 +12,19 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Symfony\Component\Yaml\Yaml;
 
-class CleanBranchCommand extends Command
+class CleanBranchCommand extends AbstractCommand
 {
     protected function configure()
     {
         $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
+        $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
         $this->addOption('yes', 'y', InputOption::VALUE_NONE, 'Confirm questions with yes');
+        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Config', $this->getRootPath() . '/config/config.yml');
+        $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force delete');
 
         $this->setName('folder:clean')
             ->setDescription('Scan folder an clean branches')
@@ -42,23 +45,35 @@ EOT
 
         $status = $input->getOption('status');
         $invert = $input->getOption('invert');
-        $yes = $input->getOption('yes');
+        $force = $input->getOption('force');
+        $yes = $input->getOption('yes') ?: $force;
+        $config = Yaml::parse(file_get_contents($input->getOption('config')));
+        $pattern = $input->getOption('pattern') ?? $config['pattern'];
 
         $finder = new Finder();
         $files = $finder->files()->in($folder);
 
         $issueService = new IssueService(new ArrayConfiguration([
-            'jiraHost' => 'https://icanhazstring.atlassian.net',
-            'jiraUser' => 'blubb0r05+jira',
-            'jiraPassword' => '4piUs3r',
+            'jiraHost' => $config['hostname'],
+            'jiraUser' => $config['username'],
+            'jiraPassword' => $config['password']
         ]));
 
         $io->title('Scan folder ' . $folder . ' for outdated issues');
-        $io->progressStart(count($files->directories()));
 
         $fs = new Filesystem();
         $remove = [];
         $notfound = [];
+
+        // If we don't force cleanup, filter out non matching branches
+        if (!$force) {
+            // Filter using pattern
+            $files->filter(function(\SplFileInfo $dir) use ($pattern) {
+                return (bool)preg_match($pattern, $dir->getFilename());
+            });
+        }
+
+        $io->progressStart(count($files->directories()));
 
         foreach ($files->directories() as $dir) {
             /** @var SplFileInfo $dir */
@@ -82,6 +97,7 @@ EOT
                     }
                 }
             } catch (\Exception $e) {
+                var_dump($e->getMessage());
                 $notfound[] = $dir;
             }
 
