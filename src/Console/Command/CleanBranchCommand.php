@@ -119,7 +119,7 @@ EOT
 
         if (count($notfound) > 0) {
             $io->section('Found some non matching branches');
-            $delete = $yes || $io->confirm('Delete?');
+            $delete = $yes || $io->confirm('Delete?', false);
 
             if ($delete) {
                 foreach ($notfound as $dir) {
