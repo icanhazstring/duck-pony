@@ -49,15 +49,15 @@ EOT
         $force = $input->getOption('force');
         $yes = $input->getOption('yes') ?: $force;
         $config = Yaml::parse(file_get_contents($input->getOption('config')));
-        $pattern = $input->getOption('pattern') ?? $config['pattern'];
+        $pattern = $input->getOption('pattern') ?? $config['CleanBranch']['pattern'];
 
         $finder = new Finder();
         $files = $finder->files()->in($folder);
 
         $issueService = new IssueService(new ArrayConfiguration([
-            'jiraHost' => $config['hostname'],
-            'jiraUser' => $config['username'],
-            'jiraPassword' => $config['password']
+            'jiraHost' => $config['CleanBranch']['hostname'],
+            'jiraUser' => $config['CleanBranch']['username'],
+            'jiraPassword' => $config['CleanBranch']['password']
         ]));
 
         $io->title('Scan folder ' . $folder . ' for outdated issues');

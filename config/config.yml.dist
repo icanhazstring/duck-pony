@@ -1,4 +1,8 @@
-hostname: ${host}
-username: ${username}
-password: ${password}
-pattern:  ${pattern}
+CleanBranch:
+  hostname: ${host}
+  username: ${username}
+  password: ${password}
+  pattern:  ${pattern}
+
+PurgeService:
+  pattern: ${instancePattern}
