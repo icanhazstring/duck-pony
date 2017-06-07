@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "a0721b8cf1acbad75202da4034e72f73",
+    "content-hash": "b573b8719085d4d5f1fcce609076a023",
     "packages": [
         {
             "name": "icanhazstring/systemctl-php",
-            "version": "v0.2",
+            "version": "v0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/icanhazstring/systemctl-php.git",
-                "reference": "ac2bb456e1eee96e9efa6f73964ed012b25525e6"
+                "reference": "6417c82ac297bc3baf53815ffd10857747ffdb78"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/icanhazstring/systemctl-php/zipball/ac2bb456e1eee96e9efa6f73964ed012b25525e6",
-                "reference": "ac2bb456e1eee96e9efa6f73964ed012b25525e6",
+                "url": "https://api.github.com/repos/icanhazstring/systemctl-php/zipball/6417c82ac297bc3baf53815ffd10857747ffdb78",
+                "reference": "6417c82ac297bc3baf53815ffd10857747ffdb78",
                 "shasum": ""
             },
             "require": {
@@ -48,7 +48,7 @@
                 }
             ],
             "description": "PHP wrapper for systemctl",
-            "time": "2017-06-02T07:48:59+00:00"
+            "time": "2017-06-07T15:27:39+00:00"
         },
         {
             "name": "icanhazstring/tempa-php",
@@ -648,7 +648,7 @@
         },
         {
             "name": "symfony/process",
-            "version": "v3.3.0",
+            "version": "v3.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
