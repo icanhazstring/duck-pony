@@ -44,7 +44,7 @@ EOT
         $folder = $input->getArgument('folder');
         $folder = stream_resolve_include_path($folder);
 
-        $status = $input->getOption('status');
+        $statuses = $this->fetchStatuses($input->getOption('status'));
         $invert = $input->getOption('invert');
         $force = $input->getOption('force');
         $yes = $input->getOption('yes') ?: $force;
@@ -83,16 +83,15 @@ EOT
             try {
                 $issue = $issueService->get($branchName, ['fields' => ['status']]);
 
-                if ($status) {
+                if (!empty($statuses)) {
                     $issueStatus = strtolower($issue->fields->status->name);
-                    $status = strtolower($status);
 
                     if ($invert) {
-                        if ($status !== $issueStatus) {
+                        if (!in_array($issueStatus, $statuses)) {
                             $remove[] = $dir;
                         }
                     } else {
-                        if ($status === $issueStatus) {
+                        if (in_array($issueStatus, $statuses)) {
                             $remove[] = $dir;
                         }
                     }
@@ -127,5 +126,12 @@ EOT
                 }
             }
         }
+    }
+
+    private function fetchStatuses($statuses)
+    {
+        $statuses = explode(',', $statuses);
+        $statuses = array_map('trim', $statuses);
+        return array_map('strtolower', $statuses);
     }
 }
