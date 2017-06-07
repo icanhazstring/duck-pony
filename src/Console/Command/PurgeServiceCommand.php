@@ -82,7 +82,7 @@ EOT
 
     private function filterServices(Service $service)
     {
-        if (strpos($service->getName(), $this->unitName) !== 0) {
+        if (strpos($service->getName(), $this->unitName) === false) {
             return false;
         }
 
