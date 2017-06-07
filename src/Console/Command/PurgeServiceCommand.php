@@ -53,6 +53,7 @@ EOT
 
         $systemCtl = new SystemCtl();
 
+        $units = $systemCtl->getServices($this->unitName);
         $services = array_filter($systemCtl->getServices(), [$this, 'filterServices']);
         $files->filter(function(\SplFileInfo $dir) {
             return (bool)preg_match($this->pattern, $dir->getFilename());
