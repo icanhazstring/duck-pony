@@ -51,7 +51,6 @@ EOT
         $finder = new Finder();
         $files = $finder->files()->in($folder);
 
-        SystemCtl::sudo(true);
         $systemCtl = new SystemCtl();
 
         $services = array_filter($systemCtl->getServices(), [$this, 'filterServices']);
