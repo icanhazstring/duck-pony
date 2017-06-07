@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b573b8719085d4d5f1fcce609076a023",
+    "content-hash": "55c78dcc52fcfd596f0737ff61b35759",
     "packages": [
         {
             "name": "icanhazstring/systemctl-php",
