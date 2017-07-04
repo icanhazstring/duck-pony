@@ -3,18 +3,14 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
-use JiraRestApi\Configuration\ArrayConfiguration;
-use JiraRestApi\Issue\IssueService;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Yaml\Yaml;
-use SystemCtl\CommandFailedException;
-use SystemCtl\Service;
+use SystemCtl\Unit\Service;
 use SystemCtl\SystemCtl;
 
 class PurgeServiceCommand extends AbstractCommand
@@ -51,6 +47,7 @@ EOT
         $finder = new Finder();
         $files = $finder->files()->in($folder);
 
+        SystemCtl::setTimeout(10);
         $systemCtl = new SystemCtl();
 
         $services = array_filter($systemCtl->getServices($this->unitName), [$this, 'filterServices']);
@@ -65,7 +62,8 @@ EOT
 
         /** @var Service[] $removeServices */
         $removeServices = array_filter($services, function(Service $service) use ($dirList) {
-            return !in_array($service->getName(), $dirList);
+            $serviceName = $service->isMultiInstance() ? $service->getInstanceName() : $service->getName();
+            return !in_array($serviceName, $dirList);
         });
 
         $io->title('Remove services');
