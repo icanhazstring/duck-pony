@@ -13,7 +13,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * Class RemoveOrphanedSymlinksCommand
  *
  * @package duckpony\Console\Command
- * @author  Michel Petiton <michel.petiton@check24.de>
+ * @author  Michel Petiton <michel@petiton.de>
  */
 class RemoveOrphanedSymlinksCommand extends AbstractCommand
 {
@@ -31,7 +31,6 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
              ->setDescription('Removes orphaned symlinks of a given folder')
              ->setHelp('Removes only orphaned symlinks under a given folder without any recursion.');
     }
-
     /**
      * Iterates a given directory and removes orphaned symlinks
      *
@@ -64,7 +63,5 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
         }
 
         $io->progressFinish();
-
-
     }
 }
