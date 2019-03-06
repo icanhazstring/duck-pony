@@ -19,7 +19,7 @@ use Symfony\Component\Yaml\Yaml;
  * Class CleanMySQLDatabaseCommand
  *
  * @package duckpony\Console\Command
- * @author  Michel Petiton <michel@petiton.de>
+ * @author  Michel Petiton <michel.petiton@check24.de>
  */
 class CleanMySQLDatabaseCommand extends AbstractCommand
 {
