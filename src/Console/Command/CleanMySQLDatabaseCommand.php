@@ -15,6 +15,12 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * Class CleanMySQLDatabaseCommand
+ *
+ * @package duckpony\Console\Command
+ * @author  Michel Petiton <michel@petiton.de>
+ */
 class CleanMySQLDatabaseCommand extends AbstractCommand
 {
     private const DATABASE_BLACKLIST = [
