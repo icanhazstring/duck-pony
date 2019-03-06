@@ -15,46 +15,45 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Yaml\Yaml;
 
-class CleanBranchCommand extends AbstractCommand
+class CleanMySQLDatabaseCommand extends AbstractCommand
 {
+    private const DATABASE_BLACKLIST = [
+        'information_schema',
+        'perfomance_schema',
+        'mysql',
+    ];
+
     protected function configure()
     {
-        $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
-        $this->addOption('yes', 'y', InputOption::VALUE_NONE, 'Confirm questions with yes');
         $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Config', $this->getRootPath() . '/config/config.yml');
-        $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force delete');
         $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL , 'Filter branchname');
 
-        $this->setName('folder:clean')
-            ->setDescription('Scan folder and clean branches')
-            ->setHelp(
-                <<<EOT
-Scan folder iterate over sub folders and removes
+        $this->setName('db:clean')
+             ->setDescription('Scans Database and cleans orphaned')
+             ->setHelp(
+                 <<<EOT
+Scans MySQL Databases and removes
 them under certain conditions
 EOT
-            );
+             );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
 
-        $folder = $input->getArgument('folder');
-        $folder = stream_resolve_include_path($folder);
-
         $statuses = $this->fetchStatuses($input->getOption('status'));
         $invert = $input->getOption('invert');
-        $force = $input->getOption('force');
-        $yes = $input->getOption('yes') ?: $force;
         $config = Yaml::parse(file_get_contents($input->getOption('config')));
-        $pattern = $input->getOption('pattern') ?? $config['CleanBranch']['pattern'];
+        $pattern = $input->getOption('pattern');
         $branchNameFilter = $input->getArgument('branchname-filter');
 
-        $finder = new Finder();
-        $files = $finder->files()->in($folder);
+        $dbUser = $config['MySQL']['username'];
+        $dbPassword = $config['MySQL']['password'];
+        $dbHost = $config['MySQL']['hostname'];
 
         $issueService = new IssueService(new ArrayConfiguration([
             'jiraHost' => $config['CleanBranch']['hostname'],
@@ -62,27 +61,24 @@ EOT
             'jiraPassword' => $config['CleanBranch']['password']
         ]));
 
-        $io->title('Scan database ' . $folder . ' for outdated issues');
+        $io->title('Scan databases');
 
-        $fs = new Filesystem();
+        $connectionString = sprintf('mysql:host=%s;', $dbHost);
+        $pdo = new \PDO($connectionString, $dbUser, $dbPassword);
+        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $databases = array_column($pdo->query('SHOW DATABASES')->fetchAll(), 'Database');
+        $databases = array_filter($databases, function($dbName) use ($pattern) {
+            return preg_match($pattern, $dbName);
+        });
+
         $remove = [];
         $notfound = [];
 
-        // If we don't force cleanup, filter out non matching branches
-        if (!$force) {
-            // Filter using pattern
-            $files->filter(function(\SplFileInfo $dir) use ($pattern) {
-                return (bool)preg_match($pattern, $dir->getFilename());
-            });
-        }
-
-        $io->progressStart(count($files->directories()));
-
-        foreach ($files->directories() as $dir) {
+        foreach ($databases as $database) {
 
             $branchName = !empty($branchNameFilter)
-                ? str_replace($branchNameFilter, '', $dir->getFilename())
-                : $dir->getFilename();
+                ? str_replace($branchNameFilter, '', $database)
+                : $database;
 
             try {
                 $issue = $issueService->get($branchName, ['fields' => ['status']]);
@@ -92,44 +88,51 @@ EOT
 
                     if ($invert) {
                         if (!in_array($issueStatus, $statuses)) {
-                            $remove[] = $dir;
+                            $remove[] = $database;
+                            $io->text(sprintf('Found orphaned database %s', $database));
                         }
                     } else {
                         if (in_array($issueStatus, $statuses)) {
-                            $remove[] = $dir;
+                            $remove[] = $database;
+                            $io->text(sprintf('Found orphaned database %s', $database));
                         }
                     }
                 }
             } catch (\Exception $e) {
                 var_dump($e->getMessage());
-                $notfound[] = $dir;
+                $notfound[] = $database;
             }
-
-            $io->progressAdvance();
         }
 
-        $io->progressFinish();
+        if (empty($remove)) {
+            $io->title('Found no databases to remove!');
+            return;
+        }
 
-        $io->title('Remove matching branches');
+        $io->title('Remove matching databases');
         $io->progressStart(count($remove));
 
-        foreach ($remove as $dir) {
-            $fs->remove($dir->getRealPath());
+
+        foreach ($remove as $db) {
+
+            if (in_array($db, self::DATABASE_BLACKLIST, true)) {
+                throw new \RuntimeException(sprintf('Database %s is blacklisted!', $db));
+            }
+
+            $stmt = $pdo->prepare(sprintf('DROP DATABASE IF EXISTS `%s`', $db));
+
+            try {
+                $result = $stmt->execute();
+                if (!$result) {
+                    var_dump($pdo->errorInfo());
+                }
+            } catch (\Throwable $e) {
+                var_dump($e);
+            }
             $io->progressAdvance();
         }
 
         $io->progressFinish();
-
-        if (count($notfound) > 0) {
-            $io->section('Found some non matching branches');
-            $delete = $yes || $io->confirm('Delete?', false);
-
-            if ($delete) {
-                foreach ($notfound as $dir) {
-                    $fs->remove($dir->getRealPath());
-                }
-            }
-        }
     }
 
     private function fetchStatuses($statuses)

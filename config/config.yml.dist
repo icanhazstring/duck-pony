@@ -1,3 +1,8 @@
+MySQL:
+  hostname: localhost
+  username: root
+  password: WKez2?74V^ehRTt&
+
 CleanBranch:
   hostname: ${host}
   username: ${username}
