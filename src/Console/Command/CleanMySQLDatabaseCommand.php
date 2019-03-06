@@ -23,6 +23,11 @@ class CleanMySQLDatabaseCommand extends AbstractCommand
         'mysql',
     ];
 
+    /**
+     * Configures the console command
+     *
+     * @return void
+     */
     protected function configure()
     {
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
@@ -41,6 +46,15 @@ EOT
              );
     }
 
+    /**
+     * Executes the console command
+     *
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return int|null|void
+     * @throws \JiraRestApi\JiraException
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
@@ -50,6 +64,14 @@ EOT
         $config = Yaml::parse(file_get_contents($input->getOption('config')));
         $pattern = $input->getOption('pattern');
         $branchNameFilter = $input->getArgument('branchname-filter');
+
+        if (!isset(
+            $config['MySQL']['username'],
+            $config['MySQL']['password'],
+            $config['MySQL']['hostname']
+        )) {
+            throw new \RuntimeException('MySQL config is incorrect! Username password and hostname required!');
+        }
 
         $dbUser = $config['MySQL']['username'];
         $dbPassword = $config['MySQL']['password'];
@@ -112,7 +134,6 @@ EOT
         $io->title('Remove matching databases');
         $io->progressStart(count($remove));
 
-
         foreach ($remove as $db) {
 
             if (in_array($db, self::DATABASE_BLACKLIST, true)) {
@@ -135,7 +156,14 @@ EOT
         $io->progressFinish();
     }
 
-    private function fetchStatuses($statuses)
+    /**
+     * Sanitizes statuses
+     *
+     * @param array $statuses
+     *
+     * @return array
+     */
+    private function fetchStatuses(array $statuses): array
     {
         $statuses = explode(',', $statuses);
         $statuses = array_map('trim', $statuses);
