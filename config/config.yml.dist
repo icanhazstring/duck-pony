@@ -1,7 +1,7 @@
 MySQL:
-  hostname: localhost
-  username: root
-  password: WKez2?74V^ehRTt&
+  hostname: ${db_host}
+  username: ${db_username}
+  password: ${db_password}
 
 CleanBranch:
   hostname: ${host}
