@@ -62,7 +62,7 @@ EOT
             'jiraPassword' => $config['CleanBranch']['password']
         ]));
 
-        $io->title('Scan database ' . $folder . ' for outdated issues');
+        $io->title('Scan Folder ' . $folder . ' for outdated issues');
 
         $fs = new Filesystem();
         $remove = [];
