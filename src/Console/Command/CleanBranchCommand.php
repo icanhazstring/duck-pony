@@ -26,9 +26,10 @@ class CleanBranchCommand extends AbstractCommand
         $this->addOption('yes', 'y', InputOption::VALUE_NONE, 'Confirm questions with yes');
         $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Config', $this->getRootPath() . '/config/config.yml');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force delete');
+        $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL , 'Filter branchname');
 
         $this->setName('folder:clean')
-            ->setDescription('Scan folder an clean branches')
+            ->setDescription('Scan folder and clean branches')
             ->setHelp(
                 <<<EOT
 Scan folder iterate over sub folders and removes
@@ -50,6 +51,7 @@ EOT
         $yes = $input->getOption('yes') ?: $force;
         $config = Yaml::parse(file_get_contents($input->getOption('config')));
         $pattern = $input->getOption('pattern') ?? $config['CleanBranch']['pattern'];
+        $branchNameFilter = $input->getArgument('branchname-filter');
 
         $finder = new Finder();
         $files = $finder->files()->in($folder);
@@ -77,8 +79,10 @@ EOT
         $io->progressStart(count($files->directories()));
 
         foreach ($files->directories() as $dir) {
-            /** @var SplFileInfo $dir */
-            $branchName = $dir->getFilename();
+
+            $branchName = !empty($branchNameFilter)
+                ? str_replace($branchNameFilter, '', $dir->getFilename())
+                : $dir->getFilename();
 
             try {
                 $issue = $issueService->get($branchName, ['fields' => ['status']]);

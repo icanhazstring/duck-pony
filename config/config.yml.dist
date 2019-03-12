@@ -1,3 +1,8 @@
+MySQL:
+  hostname: ${db_host}
+  username: ${db_username}
+  password: ${db_password}
+
 CleanBranch:
   hostname: ${host}
   username: ${username}

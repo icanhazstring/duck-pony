@@ -3,6 +3,7 @@
     "description": "Secret Duck Pony",
     "type": "project",
     "require": {
+        "php" : ">= 7.1.0",
         "lesstif/php-jira-rest-client": "^1.10",
         "symfony/console": "^3.2",
         "symfony/event-dispatcher": "^3.2",
