@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8c6456315e2edd663ca411dba349cf60",
+    "content-hash": "c55df5c7d3a6b9112ea2ea8ff347c67b",
     "packages": [
         {
             "name": "icanhazstring/systemctl-php",
-            "version": "v0.4",
+            "version": "v0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/icanhazstring/systemctl-php.git",
-                "reference": "a8480c40c4e2ac72fdab38329af43513cca3526d"
+                "reference": "5a658a1330acd22ec772d0156ef0fbc71fe5a7a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/icanhazstring/systemctl-php/zipball/a8480c40c4e2ac72fdab38329af43513cca3526d",
-                "reference": "a8480c40c4e2ac72fdab38329af43513cca3526d",
+                "url": "https://api.github.com/repos/icanhazstring/systemctl-php/zipball/5a658a1330acd22ec772d0156ef0fbc71fe5a7a4",
+                "reference": "5a658a1330acd22ec772d0156ef0fbc71fe5a7a4",
                 "shasum": ""
             },
             "require": {
@@ -25,6 +25,7 @@
                 "symfony/process": "^3.2"
             },
             "require-dev": {
+                "codeclimate/php-test-reporter": "dev-master",
                 "phpunit/phpunit": "^6.1",
                 "squizlabs/php_codesniffer": "^3.0"
             },
@@ -32,8 +33,7 @@
             "autoload": {
                 "psr-4": {
                     "SystemCtl\\": [
-                        "src/",
-                        "tests/"
+                        "src/"
                     ]
                 }
             },
@@ -48,7 +48,7 @@
                 }
             ],
             "description": "PHP wrapper for systemctl",
-            "time": "2017-07-04T09:23:02+00:00"
+            "time": "2017-08-21T13:53:17+00:00"
         },
         {
             "name": "icanhazstring/tempa-php",

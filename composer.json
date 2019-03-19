@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "icanhazstring/systemctl-php": "^0.4",
+        "icanhazstring/systemctl-php": "^0.6",
         "icanhazstring/tempa-php": "^2.0",
         "lesstif/php-jira-rest-client": "^1.10",
         "symfony/console": "^4.0",
