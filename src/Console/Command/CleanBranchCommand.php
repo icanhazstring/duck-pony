@@ -52,7 +52,7 @@ EOT
         $pattern = $input->getOption('pattern') ?? $config['CleanBranch']['pattern'];
 
         $finder = new Finder();
-        $files = $finder->depth(0)->directories()->in($pattern);
+        $files = $finder->depth(0)->directories()->in($folder);
 
         $issueService = new IssueService(new ArrayConfiguration([
             'jiraHost' => $config['CleanBranch']['hostname'],
