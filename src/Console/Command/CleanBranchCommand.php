@@ -52,7 +52,7 @@ EOT
         $pattern = $input->getOption('pattern') ?? $config['CleanBranch']['pattern'];
 
         $finder = new Finder();
-        $files = $finder->depth(0)->directories()->in($folder);
+        $directories = $finder->depth(0)->directories()->in($folder);
 
         $issueService = new IssueService(new ArrayConfiguration([
             'jiraHost' => $config['CleanBranch']['hostname'],
@@ -62,9 +62,9 @@ EOT
 
         $io->title('Scan folder ' . $folder . ' for outdated issues');
 
-        $fileCount = $files->count();
+        $dirCount = $directories->count();
         $io->writeln(
-            sprintf('Found %d folders to check', $fileCount),
+            sprintf('Found %d folders to check', $dirCount),
             OutputInterface::VERBOSITY_DEBUG
         );
 
@@ -75,7 +75,7 @@ EOT
         // If we don't force cleanup, filter out non matching branches
         if (!$force) {
             // Filter using pattern
-            $files->filter(function(\SplFileInfo $dir) use ($pattern, $io) {
+            $directories->filter(function(\SplFileInfo $dir) use ($pattern, $io) {
 
                 $matches = (bool)preg_match($pattern, $dir->getFilename());
 
@@ -91,13 +91,13 @@ EOT
         }
 
         $io->writeln(
-            sprintf('Filtered %d files not matching pattern %s', $fileCount - $files->count(), $pattern),
+            sprintf('Filtered %d files not matching pattern %s', $dirCount - $directories->count(), $pattern),
             OutputInterface::VERBOSITY_DEBUG
         );
 
-        $io->progressStart(count($files->directories()));
+        $io->progressStart(count($directories->directories()));
 
-        foreach ($files->directories() as $dir) {
+        foreach ($directories->directories() as $dir) {
             /** @var SplFileInfo $dir */
             $branchName = $dir->getFilename();
 
@@ -138,7 +138,7 @@ EOT
         $io->progressFinish();
 
         if (count($notfound) > 0) {
-            $io->section('Found some non matching branches');
+            $io->section('Found some branches that does not exist (anymore)');
             $delete = $yes || $io->confirm('Delete?', false);
 
             if ($delete) {
