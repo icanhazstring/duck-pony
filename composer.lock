@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "icanhazstring/systemctl-php",
-            "version": "v0.6",
+            "version": "v0.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/icanhazstring/systemctl-php.git",
-                "reference": "5a658a1330acd22ec772d0156ef0fbc71fe5a7a4"
+                "reference": "d98ca386e907bc6588cdd823a1c73672551db464"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/icanhazstring/systemctl-php/zipball/5a658a1330acd22ec772d0156ef0fbc71fe5a7a4",
-                "reference": "5a658a1330acd22ec772d0156ef0fbc71fe5a7a4",
+                "url": "https://api.github.com/repos/icanhazstring/systemctl-php/zipball/d98ca386e907bc6588cdd823a1c73672551db464",
+                "reference": "d98ca386e907bc6588cdd823a1c73672551db464",
                 "shasum": ""
             },
             "require": {
@@ -48,7 +48,7 @@
                 }
             ],
             "description": "PHP wrapper for systemctl",
-            "time": "2017-08-21T13:53:17+00:00"
+            "time": "2019-03-19T13:07:03+00:00"
         },
         {
             "name": "icanhazstring/tempa-php",
