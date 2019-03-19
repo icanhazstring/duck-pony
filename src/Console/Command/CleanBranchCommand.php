@@ -62,6 +62,12 @@ EOT
 
         $io->title('Scan folder ' . $folder . ' for outdated issues');
 
+        $fileCount = $files->count();
+        $io->writeln(
+            sprintf('Found %d folders to check', $fileCount),
+            OutputInterface::VERBOSITY_DEBUG
+        );
+
         $fs = new Filesystem();
         $remove = [];
         $notfound = [];
@@ -73,6 +79,11 @@ EOT
                 return (bool)preg_match($pattern, $dir->getFilename());
             });
         }
+
+        $io->writeln(
+            sprintf('Filtered %d files not matching pattern %s', $fileCount - $files->count(), $pattern),
+            OutputInterface::VERBOSITY_DEBUG
+        );
 
         $io->progressStart(count($files->directories()));
 
@@ -87,11 +98,11 @@ EOT
                     $issueStatus = strtolower($issue->fields->status->name);
 
                     if ($invert) {
-                        if (!in_array($issueStatus, $statuses)) {
+                        if (!in_array($issueStatus, $statuses, true)) {
                             $remove[] = $dir;
                         }
                     } else {
-                        if (in_array($issueStatus, $statuses)) {
+                        if (in_array($issueStatus, $statuses, true)) {
                             $remove[] = $dir;
                         }
                     }
