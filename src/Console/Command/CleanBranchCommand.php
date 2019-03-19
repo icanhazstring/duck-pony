@@ -52,7 +52,7 @@ EOT
         $pattern = $input->getOption('pattern') ?? $config['CleanBranch']['pattern'];
 
         $finder = new Finder();
-        $files = $finder->files()->in($folder);
+        $files = $finder->depth(0)->directories()->in($pattern);
 
         $issueService = new IssueService(new ArrayConfiguration([
             'jiraHost' => $config['CleanBranch']['hostname'],
@@ -75,8 +75,18 @@ EOT
         // If we don't force cleanup, filter out non matching branches
         if (!$force) {
             // Filter using pattern
-            $files->filter(function(\SplFileInfo $dir) use ($pattern) {
-                return (bool)preg_match($pattern, $dir->getFilename());
+            $files->filter(function(\SplFileInfo $dir) use ($pattern, $io) {
+
+                $matches = (bool)preg_match($pattern, $dir->getFilename());
+
+                if (!$matches) {
+                    $io->writeln(
+                        sprintf('%s not matching pattern %s', $dir->getFilename(), $pattern),
+                        OutputInterface::VERBOSITY_DEBUG
+                    );
+                }
+
+                return $matches;
             });
         }
 
