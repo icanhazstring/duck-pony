@@ -7,7 +7,7 @@ use Symfony\Component\Console\Command\Command;
 
 class AbstractCommand extends Command
 {
-    protected function getRootPath()
+    protected function getRootPath(): string
     {
         return stream_resolve_include_path(__DIR__ . '/../../../');
     }

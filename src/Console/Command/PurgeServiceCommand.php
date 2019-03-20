@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
+use SplFileInfo;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -18,7 +19,10 @@ class PurgeServiceCommand extends AbstractCommand
     protected $unitName;
     protected $pattern;
 
-    protected function configure()
+    /**
+     * @inheritdoc
+     */
+    protected function configure(): void
     {
         $this->addArgument('folder', InputArgument::REQUIRED, 'Deployment folder as reference');
         $this->addOption('unit', 'u', InputOption::VALUE_REQUIRED, 'Name of unit');
@@ -35,7 +39,10 @@ EOT
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * @inheritdoc
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $io = new SymfonyStyle($input, $output);
 
@@ -50,17 +57,18 @@ EOT
         SystemCtl::setTimeout(10);
         $systemCtl = new SystemCtl();
 
+        /** @var Service[] $services */
         $services = array_filter($systemCtl->getServices($this->unitName), [$this, 'filterServices']);
-        $directories->filter(function(\SplFileInfo $dir) {
-            return (bool)preg_match($this->pattern, $dir->getFilename());
+        $directories->filter(function(SplFileInfo $dir) {
+            return preg_match($this->pattern, $dir->getFilename());
         });
 
         $dirList = [];
         foreach ($directories->directories() as $dir) {
-            $dirList[] = $dir->getFileName();
+            /** @var SplFileInfo $dir */
+            $dirList[] = $dir->getFilename();
         }
 
-        /** @var Service[] $removeServices */
         $removeServices = array_filter($services, function(Service $service) use ($dirList) {
             $serviceName = $service->isMultiInstance() ? $service->getInstanceName() : $service->getName();
             return !in_array($serviceName, $dirList, true);
@@ -75,15 +83,14 @@ EOT
         }
 
         $io->progressFinish();
-
     }
 
-    private function filterServices(Service $service)
+    private function filterServices(Service $service): bool
     {
         if (strpos($service->getName(), $this->unitName) === false) {
             return false;
         }
 
-        return preg_match($this->pattern, $service->getName());
+        return (bool)preg_match($this->pattern, $service->getName());
     }
 }
