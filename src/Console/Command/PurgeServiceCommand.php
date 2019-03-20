@@ -45,25 +45,25 @@ EOT
         $this->pattern = $input->getOption('pattern') ?? $config['PurgeService']['pattern'];
 
         $finder = new Finder();
-        $files = $finder->files()->in($folder);
+        $directories = $finder->depth(0)->directories()->in($folder);
 
         SystemCtl::setTimeout(10);
         $systemCtl = new SystemCtl();
 
         $services = array_filter($systemCtl->getServices($this->unitName), [$this, 'filterServices']);
-        $files->filter(function(\SplFileInfo $dir) {
+        $directories->filter(function(\SplFileInfo $dir) {
             return (bool)preg_match($this->pattern, $dir->getFilename());
         });
 
         $dirList = [];
-        foreach ($files->directories() as $dir) {
+        foreach ($directories->directories() as $dir) {
             $dirList[] = $dir->getFileName();
         }
 
         /** @var Service[] $removeServices */
         $removeServices = array_filter($services, function(Service $service) use ($dirList) {
             $serviceName = $service->isMultiInstance() ? $service->getInstanceName() : $service->getName();
-            return !in_array($serviceName, $dirList);
+            return !in_array($serviceName, $dirList, true);
         });
 
         $io->title('Remove services');

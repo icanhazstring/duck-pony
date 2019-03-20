@@ -54,7 +54,7 @@ EOT
         $branchNameFilter = $input->getArgument('branchname-filter');
 
         $finder = new Finder();
-        $files = $finder->files()->in($folder);
+        $directories = $finder->depth(0)->directories()->in($folder);
 
         $issueService = new IssueService(new ArrayConfiguration([
             'jiraHost' => $config['CleanBranch']['hostname'],
@@ -64,6 +64,12 @@ EOT
 
         $io->title('Scan folder ' . $folder . ' for outdated issues');
 
+        $dirCount = $directories->count();
+        $io->writeln(
+            sprintf('Found %d folders to check', $dirCount),
+            OutputInterface::VERBOSITY_DEBUG
+        );
+
         $fs = new Filesystem();
         $remove = [];
         $notfound = [];
@@ -71,14 +77,29 @@ EOT
         // If we don't force cleanup, filter out non matching branches
         if (!$force) {
             // Filter using pattern
-            $files->filter(function(\SplFileInfo $dir) use ($pattern) {
-                return (bool)preg_match($pattern, $dir->getFilename());
+            $directories->filter(function(\SplFileInfo $dir) use ($pattern, $io) {
+
+                $matches = (bool)preg_match($pattern, $dir->getFilename());
+
+                if (!$matches) {
+                    $io->writeln(
+                        sprintf('%s not matching pattern %s', $dir->getFilename(), $pattern),
+                        OutputInterface::VERBOSITY_DEBUG
+                    );
+                }
+
+                return $matches;
             });
         }
 
-        $io->progressStart(count($files->directories()));
+        $io->writeln(
+            sprintf('Filtered %d files not matching pattern %s', $dirCount - $directories->count(), $pattern),
+            OutputInterface::VERBOSITY_DEBUG
+        );
 
-        foreach ($files->directories() as $dir) {
+        $io->progressStart(count($directories->directories()));
+
+        foreach ($directories->directories() as $dir) {
 
             $branchName = !empty($branchNameFilter)
                 ? str_replace($branchNameFilter, '', $dir->getFilename())
@@ -91,11 +112,11 @@ EOT
                     $issueStatus = strtolower($issue->fields->status->name);
 
                     if ($invert) {
-                        if (!in_array($issueStatus, $statuses)) {
+                        if (!in_array($issueStatus, $statuses, true)) {
                             $remove[] = $dir;
                         }
                     } else {
-                        if (in_array($issueStatus, $statuses)) {
+                        if (in_array($issueStatus, $statuses, true)) {
                             $remove[] = $dir;
                         }
                     }
@@ -121,7 +142,7 @@ EOT
         $io->progressFinish();
 
         if (count($notfound) > 0) {
-            $io->section('Found some non matching branches');
+            $io->section('Found some branches that does not exist (anymore)');
             $delete = $yes || $io->confirm('Delete?', false);
 
             if ($delete) {
