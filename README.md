@@ -5,6 +5,7 @@ It is linked to Atlassian Jira to retrieve information of what actions to perfor
 
 These actions include
 - CleanBranch
+- CleanMySQLDatabase
 - PurgeService
 - RemoveOrphanedSymlinks
 
@@ -47,6 +48,7 @@ Usage:
 
 Arguments:
   folder                 Folder
+  branchname-filter      Remove parts of the folder name to match jira ticket
 
 Options:
   -s, --status=STATUS    Status
@@ -62,6 +64,7 @@ Options:
       --no-ansi          Disable ANSI output
   -n, --no-interaction   Do not ask any interactive question
   -v|vv|vvv, --verbose   Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+  --branchname-filter    Remove parts of the branchname for better jira ticket matching
 
 Help:
   Scan folder iterate over sub folders and removes
@@ -151,4 +154,40 @@ Help:
 Example: Remove every orphaned symlink under nginx site-enabled
 ```bash
 $ bin/dp symlinks:remove_orphaned /etc/nginx/sites-enabled
+```
+
+## CleanMySQLDatabase
+```bash
+$ bin/dp db:clean --help
+
+Description:
+  Scans Database and cleans orphaned
+
+Usage:
+  db:clean [options] [--] <pattern>
+
+Arguments:
+  branchname-filter      Remove parts of the folder name to match jira ticket                 
+
+Options:
+  -s, --status=STATUS    Status
+  -p, --pattern=PATTERN  Branch pattern
+  -i, --invert           Invert status
+  -c, --config=CONFIG    Config [default: "/home/vendor/duck-pony/config/config.yml"]
+  -h, --help             Display this help message
+  -q, --quiet            Do not output any message
+  -V, --version          Display this application version
+      --ansi             Force ANSI output
+      --no-ansi          Disable ANSI output
+  -n, --no-interaction   Do not ask any interactive question
+  -v|vv|vvv, --verbose   Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+
+Help:
+  Scans MySQL Databases and removes
+  them under certain conditions
+```
+
+**Example**: Clean every database of tickets that are currently **not** "in progress", "reopened", "todo" or "in review".
+```bash
+$ bin/dp db:clean --status="reopened,open,in progress,in review" --invert rsv_feature- rsv_bugfix-
 ```
