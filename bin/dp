@@ -4,6 +4,7 @@
 use duckpony\Console\Command\CleanBranchCommand;
 use duckpony\Console\Command\PurgeServiceCommand;
 use duckpony\Console\Command\RemoveOrphanedSymlinksCommand;
+use \duckpony\Console\Command\CleanMySQLDatabaseCommand;
 use Symfony\Component\Console\Application;
 
 if (is_dir($vendor = __DIR__ . '/../vendor')) {
@@ -30,4 +31,5 @@ $app = new Application();
 $app->add(new CleanBranchCommand);
 $app->add(new PurgeServiceCommand);
 $app->add(new RemoveOrphanedSymlinksCommand);
+$app->add(new CleanMySQLDatabaseCommand());
 $app->run();

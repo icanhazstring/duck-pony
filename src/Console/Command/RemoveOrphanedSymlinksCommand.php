@@ -12,7 +12,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * Class RemoveOrphanedSymlinksCommand
  *
  * @package duckpony\Console\Command
- * @author  Michel Petiton <michel@petiton.de>
+ * @author  Michel Petiton <michel.petiton@check24.de>
  */
 class RemoveOrphanedSymlinksCommand extends AbstractCommand
 {

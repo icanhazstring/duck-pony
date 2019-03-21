@@ -1,4 +1,10 @@
 # Changelog
+# 0.3
+Updated:
+- `CleanBranch` now accepts a `branchname-filter` argument
+  for matching only relevant parts of the respective jira ticket.
+- Introduced `CleanMySQLDatabase` Command for cleaning orphaned mysql databases.
+- Unifies Jira config which is now shared between `CleanBranch` and `CleanMySQLDatabase`.
 
 # 0.2
 Updated:

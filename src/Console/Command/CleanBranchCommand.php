@@ -19,9 +19,6 @@ use Symfony\Component\Yaml\Yaml;
 
 class CleanBranchCommand extends AbstractCommand
 {
-    /**
-     * @inheritdoc
-     */
     protected function configure(): void
     {
         $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
@@ -32,9 +29,10 @@ class CleanBranchCommand extends AbstractCommand
         $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Config',
             $this->getRootPath() . '/config/config.yml');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force delete');
+        $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL , 'Filter branchname');
 
         $this->setName('folder:clean')
-            ->setDescription('Scan folder an clean branches')
+            ->setDescription('Scan folder and clean branches')
             ->setHelp(
                 <<<EOT
 Scan folder iterate over sub folders and removes
@@ -59,15 +57,16 @@ EOT
         $yes = $input->getOption('yes') ?: $force;
         $config = Yaml::parse(file_get_contents($input->getOption('config')));
         $pattern = $input->getOption('pattern') ?? $config['CleanBranch']['pattern'];
+        $branchNameFilter = $input->getArgument('branchname-filter');
 
         $finder = new Finder();
         $directories = $finder->depth(0)->directories()->in($folder);
 
         try {
             $issueService = new IssueService(new ArrayConfiguration([
-                'jiraHost'     => $config['CleanBranch']['hostname'],
-                'jiraUser'     => $config['CleanBranch']['username'],
-                'jiraPassword' => $config['CleanBranch']['password']
+                'jiraHost'     => $config['Jira']['hostname'],
+                'jiraUser'     => $config['Jira']['username'],
+                'jiraPassword' => $config['Jira']['password']
             ]));
         } catch (JiraException|Exception $e) {
             $io->error($e->getMessage());
@@ -113,8 +112,10 @@ EOT
         $progressBar = $io->createProgressBar(count($directories->directories()));
 
         foreach ($directories->directories() as $index => $dir) {
-            /** @var SplFileInfo $dir */
-            $branchName = $dir->getFilename();
+            /* @var SplFileInfo $dir */
+            $branchName = !empty($branchNameFilter)
+                ? str_replace($branchNameFilter, '', $dir->getFilename())
+                : $dir->getFilename();
 
             try {
                 $issue = $issueService->get($branchName, ['fields' => ['status']]);
@@ -137,7 +138,7 @@ EOT
                 $notfound[] = $dir;
             }
 
-            $progressBar->setProgress($index);
+            $progressBar->advance();
         }
 
         $progressBar->finish();
@@ -147,7 +148,7 @@ EOT
 
         foreach ($remove as $index => $dir) {
             $fs->remove($dir->getRealPath());
-            $progressBar->setProgress($index);
+            $progressBar->setProgress((int) $index);
         }
 
         $progressBar->finish();

@@ -1,7 +1,14 @@
+MySQL:
+  hostname: ${db_host}
+  username: ${db_username}
+  password: ${db_password}
+
+Jira:
+  hostname: ${jira_host}
+  username: ${jira_username}
+  password: ${jira_password}
+
 CleanBranch:
-  hostname: ${host}
-  username: ${username}
-  password: ${password}
   pattern:  ${pattern}
 
 PurgeService:
