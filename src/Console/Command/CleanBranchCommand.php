@@ -57,9 +57,9 @@ EOT
         $directories = $finder->depth(0)->directories()->in($folder);
 
         $issueService = new IssueService(new ArrayConfiguration([
-            'jiraHost' => $config['CleanBranch']['hostname'],
-            'jiraUser' => $config['CleanBranch']['username'],
-            'jiraPassword' => $config['CleanBranch']['password']
+            'jiraHost' => $config['Jira']['hostname'],
+            'jiraUser' => $config['Jira']['username'],
+            'jiraPassword' => $config['Jira']['password']
         ]));
 
         $io->title('Scan folder ' . $folder . ' for outdated issues');

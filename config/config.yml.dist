@@ -3,10 +3,12 @@ MySQL:
   username: ${db_username}
   password: ${db_password}
 
-CleanBranch:
+Jira:
   hostname: ${host}
   username: ${username}
   password: ${password}
+
+CleanBranch:
   pattern:  ${pattern}
 
 PurgeService:

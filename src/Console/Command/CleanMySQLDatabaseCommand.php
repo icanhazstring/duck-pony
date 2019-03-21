@@ -61,11 +61,14 @@ EOT
      * @return int|null|void
      * @throws \JiraRestApi\JiraException
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $io = new SymfonyStyle($input, $output);
 
-        $statuses = $this->fetchStatuses($input->getOption('status'));
+        $statuses = explode(',', $input->getOption('status'));
+        $statuses = array_map('trim', $statuses);
+        $statuses = array_map('strtolower', $statuses);
+
         $invert = $input->getOption('invert');
         $config = Yaml::parse(file_get_contents($input->getOption('config')));
         $pattern = $input->getOption('pattern');
@@ -83,11 +86,15 @@ EOT
         $dbPassword = $config['MySQL']['password'];
         $dbHost = $config['MySQL']['hostname'];
 
-        $issueService = new IssueService(new ArrayConfiguration([
-            'jiraHost' => $config['CleanBranch']['hostname'],
-            'jiraUser' => $config['CleanBranch']['username'],
-            'jiraPassword' => $config['CleanBranch']['password']
-        ]));
+        $issueService = new IssueService(
+            new ArrayConfiguration(
+                [
+                    'jiraHost'     => $config['Jira']['hostname'],
+                    'jiraUser'     => $config['Jira']['username'],
+                    'jiraPassword' => $config['Jira']['password'],
+                ]
+            )
+        );
 
         $io->title('Scan databases');
 
@@ -95,9 +102,12 @@ EOT
         $pdo = new \PDO($connectionString, $dbUser, $dbPassword);
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         $databases = array_column($pdo->query('SHOW DATABASES')->fetchAll(), 'Database');
-        $databases = array_filter($databases, function($dbName) use ($pattern) {
-            return preg_match($pattern, $dbName);
-        });
+        $databases = array_filter(
+            $databases,
+            function ($dbName) use ($pattern) {
+                return preg_match($pattern, $dbName);
+            }
+        );
 
         $remove = [];
         $notfound = [];
@@ -160,19 +170,5 @@ EOT
         }
 
         $io->progressFinish();
-    }
-
-    /**
-     * Sanitizes statuses
-     *
-     * @param array $statuses
-     *
-     * @return array
-     */
-    private function fetchStatuses(array $statuses): array
-    {
-        $statuses = explode(',', $statuses);
-        $statuses = array_map('trim', $statuses);
-        return array_map('strtolower', $statuses);
     }
 }
