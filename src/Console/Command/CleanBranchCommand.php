@@ -138,7 +138,7 @@ EOT
                 $notfound[] = $dir;
             }
 
-            $progressBar->setProgress($index);
+            $progressBar->setProgress((int) $index);
         }
 
         $progressBar->finish();
@@ -148,7 +148,7 @@ EOT
 
         foreach ($remove as $index => $dir) {
             $fs->remove($dir->getRealPath());
-            $progressBar->setProgress($index);
+            $progressBar->setProgress((int) $index);
         }
 
         $progressBar->finish();
