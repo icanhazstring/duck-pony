@@ -35,7 +35,7 @@ class CleanMySQLDatabaseCommand extends AbstractCommand
      *
      * @return void
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
@@ -59,10 +59,10 @@ EOT
      * @param InputInterface  $input
      * @param OutputInterface $output
      *
-     * @return int|null|void
+     * @return int
      * @throws \JiraRestApi\JiraException
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
@@ -80,7 +80,7 @@ EOT
             $config['MySQL']['password'],
             $config['MySQL']['hostname']
         )) {
-            throw new \RuntimeException('MySQL config is incorrect! Username password and hostname required!');
+            throw new \RuntimeException('MySQL config is incorrect! Username, password and hostname required!');
         }
 
         $dbUser = $config['MySQL']['username'];
@@ -95,7 +95,6 @@ EOT
             ]));
         } catch (JiraException|\Exception $e) {
             $io->error($e->getMessage());
-
             return 1;
         }
 
@@ -147,7 +146,7 @@ EOT
 
         if (empty($remove)) {
             $io->title('Found no databases to remove!');
-            return;
+            return 0;
         }
 
         $io->title('Remove matching databases');
@@ -173,5 +172,7 @@ EOT
         }
 
         $io->progressFinish();
+
+        return 0;
     }
 }

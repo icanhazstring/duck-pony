@@ -24,9 +24,9 @@ To configure your `config.yml` use [icanhazstring/tempa-php](https://github.com/
 $ vendor/bin/tempa file:substitute \
     config/ \
     tempa.json \
-    host=JIRA_HOST \
-    username=JIRA_USER \
-    password=JIRA_USER_PASSWORD \
+    jira_host=JIRA_HOST \
+    jira_username=JIRA_USER \
+    jira_password=JIRA_PASSWORD \
     pattern=BRANCH_PATTERN_REGEX \
     db_host=DB_HOST \
     db_username=DB_USER \

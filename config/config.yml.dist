@@ -4,9 +4,9 @@ MySQL:
   password: ${db_password}
 
 Jira:
-  hostname: ${host}
-  username: ${username}
-  password: ${password}
+  hostname: ${jira_host}
+  username: ${jira_username}
+  password: ${jira_password}
 
 CleanBranch:
   pattern:  ${pattern}

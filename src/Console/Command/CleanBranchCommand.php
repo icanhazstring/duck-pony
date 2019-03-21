@@ -19,7 +19,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class CleanBranchCommand extends AbstractCommand
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
@@ -138,7 +138,7 @@ EOT
                 $notfound[] = $dir;
             }
 
-            $progressBar->setProgress((int) $index);
+            $progressBar->advance();
         }
 
         $progressBar->finish();
