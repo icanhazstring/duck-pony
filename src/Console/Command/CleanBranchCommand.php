@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
+use Exception;
 use JiraRestApi\Configuration\ArrayConfiguration;
 use JiraRestApi\Issue\IssueService;
+use JiraRestApi\JiraException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -24,7 +26,8 @@ class CleanBranchCommand extends AbstractCommand
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
         $this->addOption('yes', 'y', InputOption::VALUE_NONE, 'Confirm questions with yes');
-        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Config', $this->getRootPath() . '/config/config.yml');
+        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Config',
+            $this->getRootPath() . '/config/config.yml');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force delete');
         $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL , 'Filter branchname');
 
@@ -38,7 +41,10 @@ EOT
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * @inheritdoc
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
@@ -56,11 +62,17 @@ EOT
         $finder = new Finder();
         $directories = $finder->depth(0)->directories()->in($folder);
 
-        $issueService = new IssueService(new ArrayConfiguration([
-            'jiraHost' => $config['Jira']['hostname'],
-            'jiraUser' => $config['Jira']['username'],
-            'jiraPassword' => $config['Jira']['password']
-        ]));
+        try {
+            $issueService = new IssueService(new ArrayConfiguration([
+                'jiraHost'     => $config['Jira']['hostname'],
+                'jiraUser'     => $config['Jira']['username'],
+                'jiraPassword' => $config['Jira']['password']
+            ]));
+        } catch (JiraException|Exception $e) {
+            $io->error($e->getMessage());
+
+            return 1;
+        }
 
         $io->title('Scan folder ' . $folder . ' for outdated issues');
 
@@ -77,7 +89,7 @@ EOT
         // If we don't force cleanup, filter out non matching branches
         if (!$force) {
             // Filter using pattern
-            $directories->filter(function(\SplFileInfo $dir) use ($pattern, $io) {
+            $directories->filter(function (\SplFileInfo $dir) use ($pattern, $io) {
 
                 $matches = (bool)preg_match($pattern, $dir->getFilename());
 
@@ -97,10 +109,10 @@ EOT
             OutputInterface::VERBOSITY_DEBUG
         );
 
-        $io->progressStart(count($directories->directories()));
+        $progressBar = $io->createProgressBar(count($directories->directories()));
 
-        foreach ($directories->directories() as $dir) {
-
+        foreach ($directories->directories() as $index => $dir) {
+            /* @var SplFileInfo $dir */
             $branchName = !empty($branchNameFilter)
                 ? str_replace($branchNameFilter, '', $dir->getFilename())
                 : $dir->getFilename();
@@ -126,20 +138,20 @@ EOT
                 $notfound[] = $dir;
             }
 
-            $io->progressAdvance();
+            $progressBar->setProgress($index);
         }
 
-        $io->progressFinish();
+        $progressBar->finish();
 
         $io->title('Remove matching branches');
-        $io->progressStart(count($remove));
+        $progressBar = $io->createProgressBar(count($remove));
 
-        foreach ($remove as $dir) {
+        foreach ($remove as $index => $dir) {
             $fs->remove($dir->getRealPath());
-            $io->progressAdvance();
+            $progressBar->setProgress($index);
         }
 
-        $io->progressFinish();
+        $progressBar->finish();
 
         if (count($notfound) > 0) {
             $io->section('Found some branches that does not exist (anymore)');
@@ -151,12 +163,19 @@ EOT
                 }
             }
         }
+
+        return 0;
     }
 
-    private function fetchStatuses($statuses)
+    /**
+     * @param string $statuses
+     * @return string[]
+     */
+    private function fetchStatuses(string $statuses): array
     {
-        $statuses = explode(',', $statuses);
-        $statuses = array_map('trim', $statuses);
-        return array_map('strtolower', $statuses);
+        $splitStatuses = explode(',', $statuses);
+        $splitStatuses = array_map('trim', $splitStatuses);
+
+        return array_map('strtolower', $splitStatuses);
     }
 }
