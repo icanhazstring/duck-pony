@@ -5,6 +5,7 @@ namespace duckpony\Console\Command;
 
 use JiraRestApi\Configuration\ArrayConfiguration;
 use JiraRestApi\Issue\IssueService;
+use JiraRestApi\JiraException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -86,15 +87,17 @@ EOT
         $dbPassword = $config['MySQL']['password'];
         $dbHost = $config['MySQL']['hostname'];
 
-        $issueService = new IssueService(
-            new ArrayConfiguration(
-                [
-                    'jiraHost'     => $config['Jira']['hostname'],
-                    'jiraUser'     => $config['Jira']['username'],
-                    'jiraPassword' => $config['Jira']['password'],
-                ]
-            )
-        );
+        try {
+            $issueService = new IssueService(new ArrayConfiguration([
+                'jiraHost'     => $config['Jira']['hostname'],
+                'jiraUser'     => $config['Jira']['username'],
+                'jiraPassword' => $config['Jira']['password']
+            ]));
+        } catch (JiraException|\Exception $e) {
+            $io->error($e->getMessage());
+
+            return 1;
+        }
 
         $io->title('Scan databases');
 
