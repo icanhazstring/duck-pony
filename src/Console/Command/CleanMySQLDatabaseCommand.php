@@ -62,7 +62,7 @@ EOT
      * @return int|null|void
      * @throws \JiraRestApi\JiraException
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
 
