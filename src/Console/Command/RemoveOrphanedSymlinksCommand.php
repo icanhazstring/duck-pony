@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace duckpony\Console\Command;
 
 use FilesystemIterator;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -24,6 +25,7 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
      */
     protected function configure(): void
     {
+        parent::configure();
         $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
 
         $this->setName('symlinks:remove_orphaned')
@@ -31,16 +33,12 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
             ->setHelp('Removes only orphaned symlinks under a given folder without any recursion.');
     }
 
-    /**
-     * Iterates a given directory and removes orphaned symlinks
-     *
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return void
-     */
-    protected function execute(InputInterface $input, OutputInterface $output): void
-    {
+    protected function executeWithConfig(
+        InputInterface $input,
+        OutputInterface $output,
+        LoggerInterface $logger,
+        array $config
+    ): int {
         $io = new SymfonyStyle($input, $output);
 
         $folder = $input->getArgument('folder');
@@ -64,5 +62,7 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
         }
 
         $io->progressFinish();
+
+        return 0;
     }
 }

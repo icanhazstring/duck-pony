@@ -1,4 +1,8 @@
 # Changelog
+# 0.4.0
+Added:
+- Critical error messages can now be sent to a slack channel
+
 # 0.3.1
 Updated:
 - Code cleanup, add editorconfig

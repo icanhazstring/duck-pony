@@ -8,13 +8,13 @@ use JiraRestApi\Configuration\ArrayConfiguration;
 use JiraRestApi\Issue\IssueService;
 use JiraRestApi\JiraException;
 use PDO;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Yaml\Yaml;
 use Throwable;
 
 class CleanMySQLDatabaseCommand extends AbstractCommand
@@ -34,14 +34,10 @@ class CleanMySQLDatabaseCommand extends AbstractCommand
      */
     protected function configure(): void
     {
+        parent::configure();
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
-        $this->addOption('config',
-            'c',
-            InputOption::VALUE_REQUIRED,
-            'Config',
-            $this->getRootPath() . '/config/config.yml');
         $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Filter branchname');
 
         $this->setName('db:clean')
@@ -62,14 +58,17 @@ EOT
      *
      * @return int
      */
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function executeWithConfig(
+        InputInterface $input,
+        OutputInterface $output,
+        LoggerInterface $logger,
+        array $config
+    ): int {
         $io = new SymfonyStyle($input, $output);
 
         $statuses = $this->initStatuses($input, $io);
 
         $invert           = $input->getOption('invert');
-        $config           = Yaml::parse(file_get_contents($input->getOption('config')));
         $pattern          = $input->getOption('pattern');
         $branchNameFilter = $input->getArgument('branchname-filter');
 
@@ -118,25 +117,40 @@ EOT
                 ? str_replace($branchNameFilter, '', $database)
                 : $database;
 
+            $issue = null;
             try {
                 $issue = $issueService->get($branchName, ['fields' => ['status']]);
+            } catch (Exception $e) {
+                if ($e->getCode() === 404) {
+                    $logger->critical(
+                        'While cleaning up, I found an unexpected database with no matching Jira Ticket.'
+                        . ' The database will be removed, but you should investigate why it was'
+                        . ' created in the first place!',
+                        [
+                            'CleanMySQLDatabaseName' => 'Error while matching databases to issues',
+                            'Unexpected database'    => $database,
+                            'Branch name'            => $branchName,
+                            'Possible cause'         => 'Jira ticket was deleted'
+                        ]
+                    );
+                } else {
+                    throw $e;
+                }
+            }
 
-                if (!empty($statuses)) {
-                    $issueStatus = strtolower($issue->fields->status->name);
+            if (!empty($statuses)) {
+                $issueStatus = strtolower($issue->fields->status->name);
 
-                    $statusFound = in_array($issueStatus, $statuses, true);
-                    if ($invert) {
-                        if (!$statusFound) {
-                            $remove[] = $database;
-                            $io->text(sprintf('Found orphaned database %s', $database));
-                        }
-                    } elseif ($statusFound) {
+                $statusFound = in_array($issueStatus, $statuses, true);
+                if ($invert) {
+                    if (!$statusFound) {
                         $remove[] = $database;
                         $io->text(sprintf('Found orphaned database %s', $database));
                     }
+                } elseif ($statusFound) {
+                    $remove[] = $database;
+                    $io->text(sprintf('Found orphaned database %s', $database));
                 }
-            } catch (Exception $e) {
-                var_dump($e->getMessage());
             }
         }
 
@@ -160,10 +174,25 @@ EOT
             try {
                 $result = $stmt->execute();
                 if (!$result) {
-                    var_dump($pdo->errorInfo());
+                    $logger->critical(
+                        'Dropping the database failed',
+                        [
+                            'CleanMySQLDatabaseName' => 'Error deleting a database!',
+                            'Unexpected database'    => $db,
+                            'PDO ErrorInfo'          => $pdo->errorInfo()
+                        ]
+                    );
                 }
             } catch (Throwable $e) {
-                var_dump($e);
+                $logger->critical(
+                    'Dropping the database failed',
+                    [
+                        'CleanMySQLDatabaseName' => 'Error deleting a database!',
+                        'Unexpected database'    => $db,
+                        'Errormessage'           => $e->getMessage(),
+                        'StackTrace'             => $e->getTraceAsString()
+                    ]
+                );
             }
             /** @noinspection DisconnectedForeachInstructionInspection */
             $io->progressAdvance();

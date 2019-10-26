@@ -31,7 +31,7 @@ $logger = new Monolog\Logger('logger');
 
 $app = new Application();
 $app->add(new CleanBranchCommand($logger));
-$app->add(new PurgeServiceCommand);
-$app->add(new RemoveOrphanedSymlinksCommand);
-$app->add(new CleanMySQLDatabaseCommand());
+$app->add(new PurgeServiceCommand($logger));
+$app->add(new RemoveOrphanedSymlinksCommand($logger));
+$app->add(new CleanMySQLDatabaseCommand($logger));
 $app->run();
