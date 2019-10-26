@@ -11,7 +11,7 @@ trait SlackLoggerAwareTrait
     {
         $slackToken   = $config['Logger']['Slack']['Token'];
         $slackChannel = $config['Logger']['Slack']['Channel'];
-        
+
         if ($slackToken && $slackChannel) {
             $slackHandler =
                 new SlackHandler($slackToken,
