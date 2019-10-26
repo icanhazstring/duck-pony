@@ -26,10 +26,13 @@ class CleanBranchCommand extends AbstractCommand
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
         $this->addOption('yes', 'y', InputOption::VALUE_NONE, 'Confirm questions with yes');
-        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Config',
+        $this->addOption('config',
+            'c',
+            InputOption::VALUE_REQUIRED,
+            'Config',
             $this->getRootPath() . '/config/config.yml');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force delete');
-        $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL , 'Filter branchname');
+        $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Filter branchname');
 
         $this->setName('folder:clean')
             ->setDescription('Scan folder and clean branches')
@@ -51,15 +54,15 @@ EOT
         $folder = $input->getArgument('folder');
         $folder = stream_resolve_include_path($folder);
 
-        $statuses = $this->fetchStatuses($input->getOption('status'));
-        $invert = $input->getOption('invert');
-        $force = $input->getOption('force');
-        $yes = $input->getOption('yes') ?: $force;
-        $config = Yaml::parse(file_get_contents($input->getOption('config')));
-        $pattern = $input->getOption('pattern') ?? $config['CleanBranch']['pattern'];
+        $statuses         = $this->fetchStatuses($input->getOption('status'));
+        $invert           = $input->getOption('invert');
+        $force            = $input->getOption('force');
+        $yes              = $input->getOption('yes') ? : $force;
+        $config           = Yaml::parse(file_get_contents($input->getOption('config')));
+        $pattern          = $input->getOption('pattern') ?? $config['CleanBranch']['pattern'];
         $branchNameFilter = $input->getArgument('branchname-filter');
 
-        $finder = new Finder();
+        $finder      = new Finder();
         $directories = $finder->depth(0)->directories()->in($folder);
 
         try {
@@ -82,14 +85,14 @@ EOT
             OutputInterface::VERBOSITY_DEBUG
         );
 
-        $fs = new Filesystem();
-        $remove = [];
+        $fs       = new Filesystem();
+        $remove   = [];
         $notfound = [];
 
         // If we don't force cleanup, filter out non matching branches
         if (!$force) {
             // Filter using pattern
-            $directories->filter(function (\SplFileInfo $dir) use ($pattern, $io) {
+            $directories->filter(static function (\SplFileInfo $dir) use ($pattern, $io) {
 
                 $matches = (bool)preg_match($pattern, $dir->getFilename());
 
@@ -123,21 +126,21 @@ EOT
                 if (!empty($statuses)) {
                     $issueStatus = strtolower($issue->fields->status->name);
 
+                    $statusFound = in_array($issueStatus, $statuses, true);
                     if ($invert) {
-                        if (!in_array($issueStatus, $statuses, true)) {
+                        if (!$statusFound) {
                             $remove[] = $dir;
                         }
-                    } else {
-                        if (in_array($issueStatus, $statuses, true)) {
-                            $remove[] = $dir;
-                        }
+                    } elseif ($statusFound) {
+                        $remove[] = $dir;
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 var_dump($e->getMessage());
                 $notfound[] = $dir;
             }
 
+            /** @noinspection DisconnectedForeachInstructionInspection */
             $progressBar->advance();
         }
 
@@ -148,7 +151,7 @@ EOT
 
         foreach ($remove as $index => $dir) {
             $fs->remove($dir->getRealPath());
-            $progressBar->setProgress((int) $index);
+            $progressBar->setProgress((int)$index);
         }
 
         $progressBar->finish();
@@ -169,6 +172,7 @@ EOT
 
     /**
      * @param string $statuses
+     *
      * @return string[]
      */
     private function fetchStatuses(string $statuses): array

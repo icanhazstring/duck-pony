@@ -10,6 +10,8 @@
         }
     ],
     "require": {
+        "php": "^7.1",
+        "ext-pdo": "*",
         "icanhazstring/systemctl-php": "^0.6",
         "icanhazstring/tempa-php": "^2.0",
         "lesstif/php-jira-rest-client": "^1.10",
