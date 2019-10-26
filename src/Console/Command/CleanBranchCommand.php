@@ -19,6 +19,8 @@ use Symfony\Component\Yaml\Yaml;
 
 class CleanBranchCommand extends AbstractCommand
 {
+    use StatusesAwareCommandTrait;
+
     protected function configure(): void
     {
         $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
@@ -51,10 +53,11 @@ EOT
     {
         $io = new SymfonyStyle($input, $output);
 
+        $statuses = $this->initStatuses($input, $io);
+
         $folder = $input->getArgument('folder');
         $folder = stream_resolve_include_path($folder);
 
-        $statuses         = $this->fetchStatuses($input->getOption('status'));
         $invert           = $input->getOption('invert');
         $force            = $input->getOption('force');
         $yes              = $input->getOption('yes') ? : $force;
@@ -168,18 +171,5 @@ EOT
         }
 
         return 0;
-    }
-
-    /**
-     * @param string $statuses
-     *
-     * @return string[]
-     */
-    private function fetchStatuses(string $statuses): array
-    {
-        $splitStatuses = explode(',', $statuses);
-        $splitStatuses = array_map('trim', $splitStatuses);
-
-        return array_map('strtolower', $splitStatuses);
     }
 }
