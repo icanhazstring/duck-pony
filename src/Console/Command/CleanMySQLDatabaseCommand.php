@@ -17,14 +17,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 
-/**
- * Class CleanMySQLDatabaseCommand
- *
- * @package duckpony\Console\Command
- * @author  Michel Petiton <michel.petiton@check24.de>
- */
 class CleanMySQLDatabaseCommand extends AbstractCommand
 {
+    use StatusesAwareCommandTrait;
+
     private const DATABASE_BLACKLIST = [
         'information_schema',
         'perfomance_schema',
@@ -41,7 +37,10 @@ class CleanMySQLDatabaseCommand extends AbstractCommand
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
-        $this->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Config',
+        $this->addOption('config',
+            'c',
+            InputOption::VALUE_REQUIRED,
+            'Config',
             $this->getRootPath() . '/config/config.yml');
         $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Filter branchname');
 
@@ -67,9 +66,7 @@ EOT
     {
         $io = new SymfonyStyle($input, $output);
 
-        $statuses = explode(',', $input->getOption('status'));
-        $statuses = array_map('trim', $statuses);
-        $statuses = array_map('strtolower', $statuses);
+        $statuses = $this->initStatuses($input, $io);
 
         $invert           = $input->getOption('invert');
         $config           = Yaml::parse(file_get_contents($input->getOption('config')));
@@ -113,7 +110,7 @@ EOT
             }
         );
 
-        $remove   = [];
+        $remove = [];
 
         foreach ($databases as $database) {
 
