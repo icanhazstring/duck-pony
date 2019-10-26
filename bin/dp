@@ -27,8 +27,10 @@ if (!class_exists(Application::class)) {
     );
 }
 
+$logger = new Monolog\Logger('logger');
+
 $app = new Application();
-$app->add(new CleanBranchCommand);
+$app->add(new CleanBranchCommand($logger));
 $app->add(new PurgeServiceCommand);
 $app->add(new RemoveOrphanedSymlinksCommand);
 $app->add(new CleanMySQLDatabaseCommand());

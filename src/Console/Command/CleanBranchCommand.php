@@ -7,6 +7,7 @@ use Exception;
 use JiraRestApi\Configuration\ArrayConfiguration;
 use JiraRestApi\Issue\IssueService;
 use JiraRestApi\JiraException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -20,6 +21,19 @@ use Symfony\Component\Yaml\Yaml;
 class CleanBranchCommand extends AbstractCommand
 {
     use StatusesAwareCommandTrait;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * CleanBranchCommand constructor.
+     */
+    public function __construct(LoggerInterface $logger)
+    {
+        parent::__construct();
+        $this->logger = $logger;
+    }
 
     protected function configure(): void
     {
@@ -139,7 +153,7 @@ EOT
                     }
                 }
             } catch (Exception $e) {
-                var_dump($e->getMessage());
+                $this->logger->critical($e->getMessage());
                 $notfound[] = $dir;
             }
 
