@@ -133,12 +133,14 @@ EOT
                             'Possible cause'         => 'Jira ticket was deleted'
                         ]
                     );
+                    $remove[] = $database;
+                    $io->text(sprintf('Found unexpected database %s', $database));
                 } else {
                     throw $e;
                 }
             }
 
-            if (!empty($statuses)) {
+            if (!empty($statuses) && $issue) {
                 $issueStatus = strtolower($issue->fields->status->name);
 
                 $statusFound = in_array($issueStatus, $statuses, true);
