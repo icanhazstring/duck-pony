@@ -112,7 +112,6 @@ EOT
         );
 
         $remove = [];
-        $notfound = [];
 
         foreach ($databases as $database) {
 
@@ -140,7 +139,7 @@ EOT
                 }
             } catch (\Exception $e) {
                 var_dump($e->getMessage());
-                $notfound[] = $database;
+                $remove[] = $database;
             }
         }
 
