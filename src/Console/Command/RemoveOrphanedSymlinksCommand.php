@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace duckpony\Console\Command;
 
 use FilesystemIterator;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -36,7 +35,6 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
     protected function executeWithConfig(
         InputInterface $input,
         OutputInterface $output,
-        LoggerInterface $logger,
         array $config
     ): int {
         $io = new SymfonyStyle($input, $output);

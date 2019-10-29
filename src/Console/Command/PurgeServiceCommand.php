@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
-use Psr\Log\LoggerInterface;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,7 +42,6 @@ EOT
     protected function executeWithConfig(
         InputInterface $input,
         OutputInterface $output,
-        LoggerInterface $logger,
         array $config
     ): int {
         $io = new SymfonyStyle($input, $output);

@@ -7,7 +7,6 @@ use Exception;
 use JiraRestApi\Configuration\ArrayConfiguration;
 use JiraRestApi\Issue\IssueService;
 use JiraRestApi\JiraException;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -46,7 +45,6 @@ EOT
     protected function executeWithConfig(
         InputInterface $input,
         OutputInterface $output,
-        LoggerInterface $logger,
         array $config
     ): int {
         $io = new SymfonyStyle($input, $output);
@@ -125,7 +123,7 @@ EOT
                 $issue = $issueService->get($branchName, ['fields' => ['status']]);
             } catch (Exception $e) {
                 if ($e->getCode() === 404) {
-                    $logger->critical(
+                    $this->logger->critical(
                         'While cleaning up, I found an unexpected subfolder with no matching Jira Ticket.'
                         . ' The folder will be removed, but you should investigate why it was'
                         . ' created in the first place!',

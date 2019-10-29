@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace duckpony\Console\Command;
 
 use Monolog\Logger;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -17,7 +16,7 @@ abstract class AbstractCommand extends Command
     use SlackLoggerAwareTrait;
 
     /** @var Logger */
-    private $logger;
+    protected $logger;
 
     public function __construct(Logger $logger)
     {
@@ -46,7 +45,7 @@ abstract class AbstractCommand extends Command
         $this->initSlackLogger($this->logger, $config);
 
         try {
-            return $this->executeWithConfig($input, $output, $this->logger, $config);
+            return $this->executeWithConfig($input, $output, $config);
         } catch (Throwable $t) {
             $this->logger->emergency($t->getMessage(),
                 [
@@ -67,7 +66,6 @@ abstract class AbstractCommand extends Command
     abstract protected function executeWithConfig(
         InputInterface $input,
         OutputInterface $output,
-        LoggerInterface $logger,
         array $config
     );
 
