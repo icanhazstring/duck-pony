@@ -25,7 +25,7 @@ ij_editorconfig_space_before_colon = false
 ij_editorconfig_space_before_comma = false
 ij_editorconfig_spaces_around_assignment_operators = true
 
-[{*.module, *.hphp, *.phtml, *.php5, *.php4, *.php, *.ctp, *.inc}]
+[{*.php}]
 ij_continuation_indent_size = 4
 ij_php_align_assignments = true
 ij_php_align_class_constants = true
@@ -232,8 +232,3 @@ indent_size = 2
 ij_continuation_indent_size = 2
 ij_yaml_keep_indents_on_empty_lines = false
 ij_yaml_keep_line_breaks = true
-
-[{*.jhm, *.rng, *.wsdl, *.fxml, *.xslt, *.jrxml, *.ant, *.xul, *.xsl, *.xsd, *.tld, *.jnlp, *.dist, *.xml}]
-ij_xml_block_comment_at_first_column = true
-ij_xml_keep_indents_on_empty_lines = false
-ij_xml_line_comment_at_first_column = true
