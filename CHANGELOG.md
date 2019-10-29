@@ -1,4 +1,9 @@
 # Changelog
+# 0.3.1
+Updated:
+- Code cleanup, add editorconfig
+- Add php extensions to composer.json
+
 # 0.3
 Updated:
 - `CleanBranch` now accepts a `branchname-filter` argument

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
+use FilesystemIterator;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -45,8 +46,8 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
         $folder = $input->getArgument('folder');
         $folder = stream_resolve_include_path($folder);
 
-        $directoryIterator = new \FilesystemIterator($folder, \FilesystemIterator::SKIP_DOTS);
-        $brokenSymlinks = [];
+        $directoryIterator = new FilesystemIterator($folder, FilesystemIterator::SKIP_DOTS);
+        $brokenSymlinks    = [];
         foreach ($directoryIterator as $item) {
             $symlink = $item->getPathName();
             if (is_link($symlink) && !file_exists($symlink)) {
@@ -58,6 +59,7 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
 
         foreach ($brokenSymlinks as $brokenSymlink) {
             unlink($brokenSymlink);
+            /** @noinspection DisconnectedForeachInstructionInspection */
             $io->progressAdvance();
         }
 

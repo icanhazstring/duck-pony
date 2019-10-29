@@ -2,9 +2,9 @@
 <?php
 
 use duckpony\Console\Command\CleanBranchCommand;
+use duckpony\Console\Command\CleanMySQLDatabaseCommand;
 use duckpony\Console\Command\PurgeServiceCommand;
 use duckpony\Console\Command\RemoveOrphanedSymlinksCommand;
-use \duckpony\Console\Command\CleanMySQLDatabaseCommand;
 use Symfony\Component\Console\Application;
 
 if (is_dir($vendor = __DIR__ . '/../vendor')) {
@@ -13,17 +13,17 @@ if (is_dir($vendor = __DIR__ . '/../vendor')) {
     require $vendor . '/autoload.php';
 } else {
     die(
-        'You must set up the project dependencies.' . PHP_EOL .
-        'To do that, run the following commands:' . PHP_EOL . PHP_EOL .
-        '$ curl -s http://getcomposer.org/installer | php' . PHP_EOL .
-        '$ php composer.phar install' . PHP_EOL
+            'You must set up the project dependencies.' . PHP_EOL .
+            'To do that, run the following commands:' . PHP_EOL . PHP_EOL .
+            '$ curl -s http://getcomposer.org/installer | php' . PHP_EOL .
+            '$ php composer.phar install' . PHP_EOL
     );
 }
 
-if (!class_exists('Symfony\Component\Console\Application')) {
+if (!class_exists(Application::class)) {
     die(
-        'You must install the symfony/console package in order ' .
-        'to use the command-line tool.' . PHP_EOL
+            'You must install the symfony/console package in order ' .
+            'to use the command-line tool.' . PHP_EOL
     );
 }
 
