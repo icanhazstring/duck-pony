@@ -121,7 +121,7 @@ EOT
             $issue = null;
             try {
                 $issue = $issueService->get($branchName, ['fields' => ['status']]);
-            } catch (Exception $e) {
+            } catch (JiraException $e) {
                 if ($e->getCode() === 404) {
                     $this->logger->critical(
                         'While cleaning up, I found an unexpected subfolder with no matching Jira Ticket.'
