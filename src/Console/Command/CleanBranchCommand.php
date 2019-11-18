@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
+use duckpony\Filesystem\Adapter\Local;
+use duckpony\Filesystem\Filesystem;
 use Exception;
 use JiraRestApi\Configuration\ArrayConfiguration;
 use JiraRestApi\Issue\IssueService;
@@ -12,7 +14,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Yaml\Yaml;
@@ -83,7 +84,9 @@ EOT
             OutputInterface::VERBOSITY_DEBUG
         );
 
-        $fs = new Filesystem();
+        $adapter = new Local($folder);
+        $fs = new Filesystem($adapter);
+
         $remove = [];
         $notfound = [];
 
@@ -110,9 +113,9 @@ EOT
             OutputInterface::VERBOSITY_DEBUG
         );
 
-        $progressBar = $io->createProgressBar(count($directories->directories()));
+        $progressBar = $io->createProgressBar($directories->count());
 
-        foreach ($directories->directories() as $index => $dir) {
+        foreach ($directories->directories() as $dir) {
             /** @var SplFileInfo $dir */
             $branchName = $dir->getFilename();
 
@@ -137,28 +140,27 @@ EOT
                 $notfound[] = $dir;
             }
 
-            $progressBar->setProgress($index);
+            $progressBar->advance();
         }
 
         $progressBar->finish();
 
         $io->title('Remove matching branches');
-        $progressBar = $io->createProgressBar(count($remove));
+        $result = $fs->deleteDirs($remove);
 
-        foreach ($remove as $index => $dir) {
-            $fs->remove($dir->getRealPath());
-            $progressBar->setProgress($index);
+        if (!$result) {
+            $io->note(
+                sprintf('Something went wrong deleting the following directories: %s', implode(', ', $remove));
         }
-
-        $progressBar->finish();
 
         if (count($notfound) > 0) {
             $io->section('Found some branches that does not exist (anymore)');
             $delete = $yes || $io->confirm('Delete?', false);
 
             if ($delete) {
+
                 foreach ($notfound as $dir) {
-                    $fs->remove($dir->getRealPath());
+                    $fs->deleteDir($dir->getRealPath());
                 }
             }
         }
