@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
-use Psr\Log\LoggerInterface;
 use SplFileInfo;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -31,20 +30,19 @@ class PurgeServiceCommand extends AbstractCommand
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Instance pattern');
 
         $this->setName('service:purge')
-            ->setDescription('Scan folder an purge services with same name')
-            ->setHelp(
-                <<<EOT
+                ->setDescription('Scan folder an purge services with same name')
+                ->setHelp(
+                        <<<EOT
 Disables and stops systemd services that have
 no reference folder in given folder argument
 EOT
-            );
+                );
     }
 
     protected function executeWithConfig(
-        InputInterface $input,
-        OutputInterface $output,
-        LoggerInterface $logger,
-        array $config
+            InputInterface $input,
+            OutputInterface $output,
+            array $config
     ): int {
         $io = new SymfonyStyle($input, $output);
 
@@ -71,11 +69,11 @@ EOT
         }
 
         $removeServices = array_filter($services,
-            static function (Service $service) use ($dirList) {
-                $serviceName = $service->isMultiInstance() ? $service->getInstanceName() : $service->getName();
+                static function (Service $service) use ($dirList) {
+                    $serviceName = $service->isMultiInstance() ? $service->getInstanceName() : $service->getName();
 
-                return !in_array($serviceName, $dirList, true);
-            });
+                    return !in_array($serviceName, $dirList, true);
+                });
 
         $io->title('Remove services');
         $io->progressStart(count($removeServices));

@@ -4,9 +4,7 @@ declare(strict_types=1);
 namespace duckpony\Console\Command;
 
 use duckpony\Console\Service\FilterSubFoldersService;
-use Exception;
 use JiraRestApi\Issue\IssueService;
-use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,15 +26,6 @@ class CleanBranchCommand extends AbstractCommand
      */
     private $filterSubFoldersService;
 
-    /**
-     * CleanBranchCommand constructor.
-     */
-    public function __construct(Logger $logger)
-    {
-        parent::__construct($logger);
-        $this->filterSubFoldersService = new FilterSubFoldersService();
-    }
-
     protected function configure(): void
     {
         parent::configure();
@@ -49,20 +38,19 @@ class CleanBranchCommand extends AbstractCommand
         $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Filter branchname');
 
         $this->setName('folder:clean')
-            ->setDescription('Scan folder and clean branches')
-            ->setHelp(
-                <<<EOT
+                ->setDescription('Scan folder and clean branches')
+                ->setHelp(
+                        <<<EOT
 Scan folder iterate over sub folders and removes
 them under certain conditions
 EOT
-            );
+                );
     }
 
     protected function executeWithConfig(
-        InputInterface $input,
-        OutputInterface $output,
-        LoggerInterface $logger,
-        array $config
+            InputInterface $input,
+            OutputInterface $output,
+            array $config
     ): int {
         $io = new SymfonyStyle($input, $output);
 
@@ -85,8 +73,8 @@ EOT
         $io->title('Scan folder ' . $folder . ' for outdated issues');
 
         $io->writeln(
-            sprintf('Found %d folders to check', $directories->count()),
-            OutputInterface::VERBOSITY_DEBUG
+                sprintf('Found %d folders to check', $directories->count()),
+                OutputInterface::VERBOSITY_DEBUG
         );
 
         // If we don't force cleanup, filter out non matching branches
@@ -95,14 +83,15 @@ EOT
         }
 
         [$remove, $notfound] =
-            $this->findBranchesToCleanup($logger,
-                $io,
-                $directories,
-                $branchNameFilter,
-                $issueService,
-                $folder,
-                $statuses,
-                $invert);
+                $this->findBranchesToCleanup(
+                        $this->logger,
+                        $io,
+                        $directories,
+                        $branchNameFilter,
+                        $issueService,
+                        $folder,
+                        $statuses,
+                        $invert);
 
         $this->removeMatchingBranches($remove, $io);
 
@@ -112,14 +101,14 @@ EOT
     }
 
     protected function findBranchesToCleanup(
-        LoggerInterface $logger,
-        SymfonyStyle $io,
-        Finder $directories,
-        $branchNameFilter,
-        IssueService $issueService,
-        string $folder,
-        $statuses,
-        $invert
+            LoggerInterface $logger,
+            SymfonyStyle $io,
+            Finder $directories,
+            $branchNameFilter,
+            IssueService $issueService,
+            string $folder,
+            $statuses,
+            $invert
     ): array {
         $progressBar = $io->createProgressBar(count($directories->directories()));
 
@@ -129,24 +118,24 @@ EOT
         foreach ($directories->directories() as $index => $dir) {
             /* @var SplFileInfo $dir */
             $branchName = !empty($branchNameFilter)
-                ? str_replace($branchNameFilter, '', $dir->getFilename())
-                : $dir->getFilename();
+                    ? str_replace($branchNameFilter, '', $dir->getFilename())
+                    : $dir->getFilename();
 
             $issue = null;
             try {
                 $issue = $issueService->get($branchName, ['fields' => ['status']]);
-            } catch (Exception $e) {
+            } catch (JiraException $e) {
                 if ($e->getCode() === 404) {
-                    $logger->critical(
-                        'While cleaning up, I found an unexpected subfolder with no matching Jira Ticket.'
-                        . ' The folder will be removed, but you should investigate why it was'
-                        . ' created in the first place!',
-                        [
-                            'CleanBranchName'           => 'Error while matching directories to issues',
-                            'Folder to clean up'        => $folder,
-                            'Unexpected folder content' => $dir->getFilename(),
-                            'Possible cause'            => 'Jira ticket was deleted'
-                        ]
+                    $this->logger->critical(
+                            'While cleaning up, I found an unexpected subfolder with no matching Jira Ticket.'
+                            . ' The folder will be removed, but you should investigate why it was'
+                            . ' created in the first place!',
+                            [
+                                    'CleanBranchName'           => 'Error while matching directories to issues',
+                                    'Folder to clean up'        => $folder,
+                                    'Unexpected folder content' => $dir->getFilename(),
+                                    'Possible cause'            => 'Jira ticket was deleted'
+                            ]
                     );
                 } else {
                     throw $e;
