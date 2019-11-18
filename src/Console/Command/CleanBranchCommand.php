@@ -19,7 +19,6 @@ use Symfony\Component\Finder\SplFileInfo;
 class CleanBranchCommand extends AbstractCommand
 {
     use StatusesAwareCommandTrait;
-    use SlackLoggerAwareTrait;
     use IssueServiceAwareTrait;
 
     /**
