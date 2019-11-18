@@ -13,3 +13,8 @@ CleanBranch:
 
 PurgeService:
   pattern: ${instancePattern}
+
+Logger:
+    Slack:
+        Token: ${slackToken}
+        Channel: ${slackChannel}

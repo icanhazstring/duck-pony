@@ -31,12 +31,16 @@ $ vendor/bin/tempa file:substitute \
     db_host=DB_HOST \
     db_username=DB_USER \
     db_password=DB_PASSWORD \
-    instancePattern=SYSTEMD_SERVICE_PATTERN
+    instancePattern=SYSTEMD_SERVICE_PATTERN \
+    slackToken=SLACK_TOKEN \
+    slackChannel=SLACK_CHANNEL
     
 ```
 
 > The `pattern` is used to identify tickets and folders alike. This means, your folders **MUST** have the same name
 as the ticket in your jira board.
+
+If slackToken and slackChannel are set, Logging messages with a level of critical or above will be sent to this slack channel
 
 # Commands
 ## CleanBranch

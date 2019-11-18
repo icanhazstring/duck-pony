@@ -24,6 +24,7 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
      */
     protected function configure(): void
     {
+        parent::configure();
         $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
 
         $this->setName('symlinks:remove_orphaned')
@@ -31,16 +32,11 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
             ->setHelp('Removes only orphaned symlinks under a given folder without any recursion.');
     }
 
-    /**
-     * Iterates a given directory and removes orphaned symlinks
-     *
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
-     * @return void
-     */
-    protected function execute(InputInterface $input, OutputInterface $output): void
-    {
+    protected function executeWithConfig(
+        InputInterface $input,
+        OutputInterface $output,
+        array $config
+    ): int {
         $io = new SymfonyStyle($input, $output);
 
         $folder = $input->getArgument('folder');
@@ -64,5 +60,7 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
         }
 
         $io->progressFinish();
+
+        return 0;
     }
 }

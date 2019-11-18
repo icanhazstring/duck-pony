@@ -15,24 +15,20 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Symfony\Component\Yaml\Yaml;
 
 class CleanBranchCommand extends AbstractCommand
 {
     use StatusesAwareCommandTrait;
+    use SlackLoggerAwareTrait;
 
     protected function configure(): void
     {
+        parent::configure();
         $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
         $this->addOption('yes', 'y', InputOption::VALUE_NONE, 'Confirm questions with yes');
-        $this->addOption('config',
-            'c',
-            InputOption::VALUE_REQUIRED,
-            'Config',
-            $this->getRootPath() . '/config/config.yml');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force delete');
         $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Filter branchname');
 
@@ -46,11 +42,11 @@ EOT
             );
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function executeWithConfig(
+        InputInterface $input,
+        OutputInterface $output,
+        array $config
+    ): int {
         $io = new SymfonyStyle($input, $output);
 
         $statuses = $this->initStatuses($input, $io);
@@ -61,7 +57,6 @@ EOT
         $invert           = $input->getOption('invert');
         $force            = $input->getOption('force');
         $yes              = $input->getOption('yes') ? : $force;
-        $config           = Yaml::parse(file_get_contents($input->getOption('config')));
         $pattern          = $input->getOption('pattern') ?? $config['CleanBranch']['pattern'];
         $branchNameFilter = $input->getArgument('branchname-filter');
 
@@ -123,23 +118,39 @@ EOT
                 ? str_replace($branchNameFilter, '', $dir->getFilename())
                 : $dir->getFilename();
 
+            $issue = null;
             try {
                 $issue = $issueService->get($branchName, ['fields' => ['status']]);
+            } catch (JiraException $e) {
+                if ($e->getCode() === 404) {
+                    $this->logger->critical(
+                        'While cleaning up, I found an unexpected subfolder with no matching Jira Ticket.'
+                        . ' The folder will be removed, but you should investigate why it was'
+                        . ' created in the first place!',
+                        [
+                            'CleanBranchName'           => 'Error while matching directories to issues',
+                            'Folder to clean up'        => $folder,
+                            'Unexpected folder content' => $dir->getFilename(),
+                            'Possible cause'            => 'Jira ticket was deleted'
+                        ]
+                    );
+                } else {
+                    throw $e;
+                }
+            }
 
-                if (!empty($statuses)) {
-                    $issueStatus = strtolower($issue->fields->status->name);
+            if($issue) {
+                $issueStatus = strtolower($issue->fields->status->name);
 
-                    $statusFound = in_array($issueStatus, $statuses, true);
-                    if ($invert) {
-                        if (!$statusFound) {
-                            $remove[] = $dir;
-                        }
-                    } elseif ($statusFound) {
+                $statusFound = in_array($issueStatus, $statuses, true);
+                if ($invert) {
+                    if (!$statusFound) {
                         $remove[] = $dir;
                     }
+                } elseif ($statusFound) {
+                    $remove[] = $dir;
                 }
-            } catch (Exception $e) {
-                var_dump($e->getMessage());
+            } else {
                 $notfound[] = $dir;
             }
 

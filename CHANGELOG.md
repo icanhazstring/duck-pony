@@ -1,5 +1,7 @@
 # Changelog
-# 0.3.1
+# 0.4.0
+Added:
+- Critical error messages can now be sent to a slack channel
 Updated:
 - Code cleanup, add editorconfig
 - Add php extensions to composer.json
