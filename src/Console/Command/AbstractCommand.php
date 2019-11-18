@@ -28,10 +28,10 @@ abstract class AbstractCommand extends Command
     {
         parent::configure();
         $this->addOption('config',
-            'c',
-            InputOption::VALUE_REQUIRED,
-            'Config',
-            $this->getRootPath() . '/config/config.yml');
+                'c',
+                InputOption::VALUE_REQUIRED,
+                'Config',
+                $this->getRootPath() . '/config/config.yml');
     }
 
     protected function getRootPath(): string
@@ -48,10 +48,10 @@ abstract class AbstractCommand extends Command
             return $this->executeWithConfig($input, $output, $config);
         } catch (Throwable $t) {
             $this->logger->emergency($t->getMessage(),
-                [
-                    'Duck-Pony'  => 'Unhandled Exception during execution of ' . $input->getFirstArgument(),
-                    'StackTrace' => $t->getTraceAsString()
-                ]
+                    [
+                            'Duck-Pony'  => 'Unhandled Exception during execution of ' . $input->getFirstArgument(),
+                            'StackTrace' => $t->getTraceAsString()
+                    ]
             );
 
             return 10;
@@ -64,9 +64,9 @@ abstract class AbstractCommand extends Command
      * This is a hack, that is needed because there is not DI in this project yet.
      */
     abstract protected function executeWithConfig(
-        InputInterface $input,
-        OutputInterface $output,
-        array $config
+            InputInterface $input,
+            OutputInterface $output,
+            array $config
     );
 
 }

@@ -136,7 +136,7 @@ EOT
                 }
             }
 
-            if (!empty($statuses)) {
+            if (!empty($statuses) && $issue) {
                 $issueStatus = strtolower($issue->fields->status->name);
 
                 $statusFound = in_array($issueStatus, $statuses, true);
