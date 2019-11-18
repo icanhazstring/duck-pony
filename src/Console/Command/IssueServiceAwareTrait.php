@@ -18,11 +18,10 @@ trait IssueServiceAwareTrait
                 'jiraUser'     => $config['Jira']['username'],
                 'jiraPassword' => $config['Jira']['password']
             ]));
-        } catch (JiraException|Exception $e) {
+        } catch (JiraException | Exception $e) {
             $io->error($e->getMessage());
 
             die(1);
         }
-
     }
 }

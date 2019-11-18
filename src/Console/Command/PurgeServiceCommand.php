@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace duckpony\Console\Command;
@@ -32,17 +33,20 @@ class PurgeServiceCommand extends AbstractCommand
         $this->setName('service:purge')
                 ->setDescription('Scan folder an purge services with same name')
                 ->setHelp(
-                        <<<EOT
+                    <<<EOT
 Disables and stops systemd services that have
 no reference folder in given folder argument
 EOT
                 );
     }
 
+    /**
+     * @param string[][] $config
+     */
     protected function executeWithConfig(
-            InputInterface $input,
-            OutputInterface $output,
-            array $config
+        InputInterface $input,
+        OutputInterface $output,
+        array $config
     ): int {
         $io = new SymfonyStyle($input, $output);
 
@@ -68,12 +72,14 @@ EOT
             $dirList[] = $dir->getFilename();
         }
 
-        $removeServices = array_filter($services,
-                static function (Service $service) use ($dirList) {
+        $removeServices = array_filter(
+            $services,
+            static function (Service $service) use ($dirList) {
                     $serviceName = $service->isMultiInstance() ? $service->getInstanceName() : $service->getName();
 
                     return !in_array($serviceName, $dirList, true);
-                });
+            }
+        );
 
         $io->title('Remove services');
         $io->progressStart(count($removeServices));

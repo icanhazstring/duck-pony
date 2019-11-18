@@ -14,7 +14,8 @@ trait SlackLoggerAwareTrait
 
         if ($slackToken && $slackChannel) {
             $slackHandler =
-                new SlackHandler($slackToken,
+                new SlackHandler(
+                    $slackToken,
                     $slackChannel,
                     'Duck-Pony',
                     true,
@@ -22,7 +23,8 @@ trait SlackLoggerAwareTrait
                     Logger::CRITICAL,
                     true,
                     false,
-                    true);
+                    true
+                );
             $logger->pushHandler($slackHandler);
         }
     }

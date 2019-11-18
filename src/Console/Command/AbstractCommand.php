@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace duckpony\Console\Command;
@@ -27,11 +28,13 @@ abstract class AbstractCommand extends Command
     protected function configure()
     {
         parent::configure();
-        $this->addOption('config',
-                'c',
-                InputOption::VALUE_REQUIRED,
-                'Config',
-                $this->getRootPath() . '/config/config.yml');
+        $this->addOption(
+            'config',
+            'c',
+            InputOption::VALUE_REQUIRED,
+            'Config',
+            $this->getRootPath() . '/config/config.yml'
+        );
     }
 
     protected function getRootPath(): string
@@ -47,8 +50,9 @@ abstract class AbstractCommand extends Command
         try {
             return $this->executeWithConfig($input, $output, $config);
         } catch (Throwable $t) {
-            $this->logger->emergency($t->getMessage(),
-                    [
+            $this->logger->emergency(
+                $t->getMessage(),
+                [
                             'Duck-Pony'  => 'Unhandled Exception during execution of ' . $input->getFirstArgument(),
                             'StackTrace' => $t->getTraceAsString()
                     ]
@@ -62,11 +66,11 @@ abstract class AbstractCommand extends Command
      * This method is needed so we can add an error handler around it.
      *
      * This is a hack, that is needed because there is not DI in this project yet.
+     * @param string[][] $config
      */
     abstract protected function executeWithConfig(
-            InputInterface $input,
-            OutputInterface $output,
-            array $config
+        InputInterface $input,
+        OutputInterface $output,
+        array $config
     );
-
 }
