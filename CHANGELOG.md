@@ -1,5 +1,9 @@
 # Changelog
 
+# [0.5.11] - 2019-11-19
+## Fixed:
+- Fixed an issue where the typehint of `branchname-filter` was expected as `string` where it is actually an `array`
+
 # [0.5.0] - 2019-11-19
 ## Added:
 - Added dependency injection through `league/container`
