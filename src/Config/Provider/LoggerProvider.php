@@ -25,7 +25,7 @@ class LoggerProvider extends AbstractServiceProvider
         $logger = new Logger('logger');
         $logger->pushHandler(new StreamHandler(fopen('php://stdout', 'wb')));
 
-        if (isset($config->slack, $config->slack->token, $config->slack->channel)) {
+        if (isset($config->slack, $config->slack->token, $config->slack->channel, $config->slack->level)) {
             $handler = new SlackHandler(
                 $config->slack->token,
                 $config->slack->channel,
