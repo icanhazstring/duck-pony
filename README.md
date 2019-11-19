@@ -40,7 +40,7 @@ $ vendor/bin/tempa file:substitute \
 > The `pattern` is used to identify tickets and folders alike. This means, your folders **MUST** have the same name
 as the ticket in your jira board.
 
-> If slack_token and slack_channel are set, logged messages will be sent to this slack channel
+> If slack_token and slack_channel are set, logged messages with a level of critical or higher will be sent to this slack channel
 
 # Commands
 ## CleanBranch
