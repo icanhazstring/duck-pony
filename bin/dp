@@ -5,8 +5,7 @@ use duckpony\Console\Command\CleanBranchCommand;
 use duckpony\Console\Command\CleanMySQLDatabaseCommand;
 use duckpony\Console\Command\PurgeServiceCommand;
 use duckpony\Console\Command\RemoveOrphanedSymlinksCommand;
-use League\Container\Container;
-use League\Container\ReflectionContainer;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Application;
 
@@ -30,17 +29,20 @@ if (!class_exists(Application::class)) {
     );
 }
 
-$logger = new Monolog\Logger('logger');
+(static function () {
+    /** @var ContainerInterface $container */
+    $container = require __DIR__ . '/../config/container.php';
 
-$container = new Container();
-$container->defaultToShared();
-$container->delegate((new ReflectionContainer())->cacheResolutions());
+    $app = $container->get(Application::class);
+    $app->add($container->get(CleanBranchCommand::class));
+    $app->add($container->get(PurgeServiceCommand::class));
+    $app->add($container->get(RemoveOrphanedSymlinksCommand::class));
+    $app->add($container->get(CleanMySQLDatabaseCommand::class));
 
-$container->add(LoggerInterface::class, $logger);
-
-$app = $container->get(Application::class);
-$app->add($container->get(CleanBranchCommand::class));
-$app->add($container->get(PurgeServiceCommand::class));
-$app->add($container->get(RemoveOrphanedSymlinksCommand::class));
-$app->add($container->get(CleanMySQLDatabaseCommand::class));
-$app->run();
+    try {
+        $app->run();
+    } catch (Throwable $throwable) {
+        $logger = $container->get(LoggerInterface::class);
+        $logger->critical($throwable->getMessage(), ['exception' => $throwable]);
+    }
+})();
