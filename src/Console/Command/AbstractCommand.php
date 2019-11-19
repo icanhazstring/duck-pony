@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -16,10 +16,10 @@ abstract class AbstractCommand extends Command
 {
     use SlackLoggerAwareTrait;
 
-    /** @var Logger */
+    /** @var LoggerInterface */
     protected $logger;
 
-    public function __construct(Logger $logger)
+    public function __construct(LoggerInterface $logger)
     {
         parent::__construct();
         $this->logger = $logger;

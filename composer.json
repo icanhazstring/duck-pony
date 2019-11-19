@@ -19,7 +19,8 @@
         "symfony/filesystem": "^4.0",
         "symfony/finder": "^4.0",
         "symfony/yaml": "^4.0",
-        "monolog/monolog": "^1.25"
+        "monolog/monolog": "^1.25",
+        "league/container": "^3.3"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
@@ -27,7 +28,8 @@
         "phpstan/phpstan": "^0.11.19"
     },
     "suggest": {
-        "ext-pdo": "Needed if you want to use the CleanMySQLDatabaseCommand"
+        "ext-pdo": "Needed if you want to use the CleanMySQLDatabaseCommand",
+        "ext-openssl": "Needed if you want to use slack logger"
     },
     "scripts": {
         "check": [
