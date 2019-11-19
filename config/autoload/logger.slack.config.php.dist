@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
+
+return [
+    LoggerInterface::class => [
+        'slack' => [
+            'token'   => '${slack_token}',
+            'channel' => '${slack_channel}',
+            'level'   => Logger::CRITICAL
+        ]
+    ]
+];

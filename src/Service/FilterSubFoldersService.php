@@ -1,6 +1,6 @@
 <?php
 
-namespace duckpony\Console\Service;
+namespace duckpony\Service;
 
 use SplFileInfo;
 use Symfony\Component\Console\Output\OutputInterface;

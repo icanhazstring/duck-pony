@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace duckpony\Console\Command;
 
 use FilesystemIterator;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,7 +17,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * @package duckpony\Console\Command
  * @author  Michel Petiton <michel.petiton@check24.de>
  */
-class RemoveOrphanedSymlinksCommand extends AbstractCommand
+class RemoveOrphanedSymlinksCommand extends Command
 {
     /**
      * Configures the CLI Command
@@ -25,7 +26,6 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
      */
     protected function configure(): void
     {
-        parent::configure();
         $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
 
         $this->setName('symlinks:remove_orphaned')
@@ -33,18 +33,15 @@ class RemoveOrphanedSymlinksCommand extends AbstractCommand
             ->setHelp('Removes only orphaned symlinks under a given folder without any recursion.');
     }
 
-    protected function executeWithConfig(
-        InputInterface $input,
-        OutputInterface $output,
-        array $config
-    ): int {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $io = new SymfonyStyle($input, $output);
 
         $folder = $input->getArgument('folder');
         $folder = stream_resolve_include_path($folder);
 
         $directoryIterator = new FilesystemIterator($folder, FilesystemIterator::SKIP_DOTS);
-        $brokenSymlinks    = [];
+        $brokenSymlinks = [];
         foreach ($directoryIterator as $item) {
             $symlink = $item->getPathName();
             if (is_link($symlink) && !file_exists($symlink)) {

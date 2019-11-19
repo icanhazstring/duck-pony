@@ -1,6 +1,15 @@
 # Changelog
 
-# [0.5.11] - 2019-11-19
+# [0.6.0] - TBA
+## Changed:
+- Changed yaml config to php configuration files using `zend-config`
+- Renamed some configuration values to reflect general naming (snake_case)
+
+## Removed:
+- Removed support of `--config|c` option on certain commands as the configs is created using `tempa-php`
+- Removed `symfony/yaml` as a dependency 
+
+# [0.5.1] - 2019-11-19
 ## Fixed:
 - Fixed an issue where the typehint of `branchname-filter` was expected as `string` where it is actually an `array`
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace duckpony\Console\Command;
 
 use SplFileInfo;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -13,48 +14,50 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Finder\Finder;
 use SystemCtl\SystemCtl;
 use SystemCtl\Unit\Service;
+use Zend\Config\Config;
 
-class PurgeServiceCommand extends AbstractCommand
+class PurgeServiceCommand extends Command
 {
     /** @var string */
     protected $unitName;
     protected $pattern;
+
+    /** @var Config */
+    private $config;
+
+    public function __construct(Config $config)
+    {
+        parent::__construct('service:purge');
+        $this->config = $config->get(self::class);
+    }
 
     /**
      * @inheritdoc
      */
     protected function configure(): void
     {
-        parent::configure();
         $this->addArgument('folder', InputArgument::REQUIRED, 'Deployment folder as reference');
         $this->addOption('unit', 'u', InputOption::VALUE_REQUIRED, 'Name of unit');
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Instance pattern');
 
-        $this->setName('service:purge')
-                ->setDescription('Scan folder an purge services with same name')
-                ->setHelp(
-                    <<<EOT
+        $this->setDescription('Scan folder an purge services with same name')
+            ->setHelp(
+                <<<EOT
 Disables and stops systemd services that have
 no reference folder in given folder argument
 EOT
-                );
+            );
     }
 
-    /**
-     * @param string[][] $config
-     */
-    protected function executeWithConfig(
-        InputInterface $input,
-        OutputInterface $output,
-        array $config
-    ): int {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $io = new SymfonyStyle($input, $output);
 
-        $folder         = stream_resolve_include_path($input->getArgument('folder'));
+        $folder = stream_resolve_include_path($input->getArgument('folder'));
         $this->unitName = $input->getOption('unit');
-        $this->pattern  = $input->getOption('pattern') ?? $config['PurgeService']['pattern'];
+        $this->pattern = $input->getOption('pattern') ?? $this->config->pattern;
 
-        $finder      = new Finder();
+        $finder = new Finder();
         $directories = $finder->depth(0)->directories()->in($folder);
 
         SystemCtl::setTimeout(10);
@@ -75,9 +78,9 @@ EOT
         $removeServices = array_filter(
             $services,
             static function (Service $service) use ($dirList) {
-                    $serviceName = $service->isMultiInstance() ? $service->getInstanceName() : $service->getName();
+                $serviceName = $service->isMultiInstance() ? $service->getInstanceName() : $service->getName();
 
-                    return !in_array($serviceName, $dirList, true);
+                return !in_array($serviceName, $dirList, true);
             }
         );
 
