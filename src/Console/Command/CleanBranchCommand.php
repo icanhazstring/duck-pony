@@ -108,7 +108,7 @@ EOT
     /**
      * @param SymfonyStyle $io
      * @param Finder       $directories
-     * @param string       $branchNameFilter
+     * @param array        $branchNameFilter
      * @param IssueService $issueService
      * @param string       $folder
      * @param array        $statuses
@@ -120,7 +120,7 @@ EOT
     protected function findBranchesToCleanup(
         SymfonyStyle $io,
         Finder $directories,
-        string $branchNameFilter,
+        array $branchNameFilter,
         IssueService $issueService,
         string $folder,
         array $statuses,
