@@ -1,0 +1,11 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    JiraRestApi\Configuration\ConfigurationInterface::class => [
+        'jiraHost'     => '${jira_host}',
+        'jiraUser'     => '${jira_username}',
+        'jiraPassword' => '${jira_password}'
+    ]
+];

@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+use duckpony\Console\Command\CleanMySQLDatabaseCommand;
+
+return [
+    CleanMySQLDatabaseCommand::class => [
+        'hostname' => '${db_host}',
+        'username' => '${db_username}',
+        'password' => '${db_password}'
+    ]
+];

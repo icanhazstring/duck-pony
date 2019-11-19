@@ -1,0 +1,12 @@
+#includes:
+#    - vendor/jangregor/phpstan-prophecy/src/extension.neon
+#    - vendor/phpstan/phpstan-phpunit/extension.neon
+#    - vendor/phpstan/phpstan-phpunit/rules.neon
+
+parameters:
+    universalObjectCratesClasses:
+        - Zend\Config\Config
+    inferPrivatePropertyTypeFromConstructor: true
+    level: 4
+    paths:
+        - src/

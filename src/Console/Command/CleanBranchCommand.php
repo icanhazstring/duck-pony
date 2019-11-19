@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
-use duckpony\Console\Service\FilterSubFoldersService;
+use duckpony\Service\FilterSubFoldersService;
 use JiraRestApi\Issue\IssueService;
 use JiraRestApi\JiraException;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -15,20 +17,37 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Zend\Config\Config;
 
-class CleanBranchCommand extends AbstractCommand
+class CleanBranchCommand extends Command
 {
     use StatusesAwareCommandTrait;
-    use IssueServiceAwareTrait;
 
-    /**
-     * @var FilterSubFoldersService
-     */
+    /** @var FilterSubFoldersService */
     private $filterSubFoldersService;
+    /** @var LoggerInterface */
+    private $logger;
+    /** @var Config */
+    private $config;
+    /** @var IssueService */
+    private $issueService;
+
+    public function __construct(
+        LoggerInterface $logger,
+        Config $config,
+        FilterSubFoldersService $filterSubFoldersService,
+        IssueService $issueService
+    ) {
+        parent::__construct('folder:clean');
+
+        $this->logger = $logger;
+        $this->config = $config->get(self::class);
+        $this->filterSubFoldersService = $filterSubFoldersService;
+        $this->issueService = $issueService;
+    }
 
     protected function configure(): void
     {
-        parent::configure();
         $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
@@ -37,8 +56,7 @@ class CleanBranchCommand extends AbstractCommand
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force delete');
         $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Filter branchname');
 
-        $this->setName('folder:clean')
-            ->setDescription('Scan folder and clean branches')
+        $this->setDescription('Scan folder and clean branches')
             ->setHelp(
                 <<<EOT
 Scan folder iterate over sub folders and removes
@@ -47,17 +65,8 @@ EOT
             );
     }
 
-    /**
-     * @param string[][] $config
-     *
-     * @throws JiraException
-     * @throws \JsonMapper_Exception
-     */
-    protected function executeWithConfig(
-        InputInterface $input,
-        OutputInterface $output,
-        array $config
-    ): int {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $io = new SymfonyStyle($input, $output);
 
         $statuses = $this->initStatuses($input, $io);
@@ -68,13 +77,11 @@ EOT
         $invert = $input->getOption('invert');
         $force = $input->getOption('force');
         $yes = $input->getOption('yes') ?: $force;
-        $pattern = $input->getOption('pattern') ?? $config['CleanBranch']['pattern'];
+        $pattern = $input->getOption('pattern') ?? $this->config->pattern;
         $branchNameFilter = $input->getArgument('branchname-filter');
 
         $finder = new Finder();
         $directories = $finder->depth(0)->directories()->in($folder);
-
-        $issueService = $this->initIssueService($config, $io);
 
         $io->title('Scan folder ' . $folder . ' for outdated issues');
 
@@ -92,7 +99,7 @@ EOT
             $io,
             $directories,
             $branchNameFilter,
-            $issueService,
+            $this->issueService,
             $folder,
             $statuses,
             $invert
@@ -114,7 +121,6 @@ EOT
      * @param array        $statuses
      * @param bool         $invert
      * @return array
-     * @throws JiraException
      * @throws \JsonMapper_Exception
      */
     protected function findBranchesToCleanup(
@@ -141,21 +147,17 @@ EOT
             try {
                 $issue = $issueService->get($branchName, ['fields' => ['status']]);
             } catch (JiraException $e) {
-                if ($e->getCode() === 404) {
-                    $this->logger->critical(
-                        'While cleaning up, I found an unexpected subfolder with no matching Jira Ticket.'
-                        . ' The folder will be removed, but you should investigate why it was'
-                        . ' created in the first place!',
-                        [
-                            'CleanBranchName'           => 'Error while matching directories to issues',
-                            'Folder to clean up'        => $folder,
-                            'Unexpected folder content' => $dir->getFilename(),
-                            'Possible cause'            => 'Jira ticket was deleted'
-                        ]
-                    );
-                } else {
-                    throw $e;
-                }
+                $this->logger->critical(
+                    'While cleaning up, I found an unexpected subfolder with no matching Jira Ticket.'
+                    . ' The folder will be removed, but you should investigate why it was'
+                    . ' created in the first place!',
+                    [
+                        'CleanBranchName'           => 'Error while matching directories to issues',
+                        'Folder to clean up'        => $folder,
+                        'Unexpected folder content' => $dir->getFilename(),
+                        'Possible cause'            => 'Jira ticket was deleted'
+                    ]
+                );
             }
 
             if ($issue) {
@@ -184,7 +186,7 @@ EOT
 
     /**
      * @param SplFileInfo[] $remove
-     * @param SymfonyStyle $io
+     * @param SymfonyStyle  $io
      */
     protected function removeMatchingBranches(array $remove, SymfonyStyle $io): void
     {

@@ -4,28 +4,51 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
-use Exception;
-use JiraRestApi\Configuration\ArrayConfiguration;
 use JiraRestApi\Issue\IssueService;
 use JiraRestApi\JiraException;
 use PDO;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Throwable;
+use Zend\Config\Config;
 
-class CleanMySQLDatabaseCommand extends AbstractCommand
+class CleanMySQLDatabaseCommand extends Command
 {
     use StatusesAwareCommandTrait;
 
     private const DATABASE_BLACKLIST = [
-            'information_schema',
-            'perfomance_schema',
-            'mysql',
+        'information_schema',
+        'perfomance_schema',
+        'mysql',
     ];
+
+    /** @var LoggerInterface */
+    private $logger;
+    /** @var IssueService */
+    private $issueService;
+    /** @var Config */
+    private $config;
+    /** @var PDO */
+    private $pdo;
+
+    public function __construct(
+        LoggerInterface $logger,
+        IssueService $issueService,
+        Config $config,
+        PDO $pdo
+    ) {
+        parent::__construct('db:clean');
+        $this->logger = $logger;
+        $this->issueService = $issueService;
+        $this->config = $config->get(self::class);
+        $this->pdo = $pdo;
+    }
 
     /**
      * Configures the console command
@@ -34,79 +57,41 @@ class CleanMySQLDatabaseCommand extends AbstractCommand
      */
     protected function configure(): void
     {
-        parent::configure();
         $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
         $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
         $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Filter branchname');
 
-        $this->setName('db:clean')
-                ->setDescription('Scans Database and cleans orphaned')
-                ->setHelp(
-                    <<<EOT
+        $this->setDescription('Scans Database and cleans orphaned')
+            ->setHelp(
+                <<<EOT
 Scans MySQL Databases and removes
 them under certain conditions
 EOT
-                );
+            );
     }
 
-    /**
-     * Executes the console command
-     *
-     * @param string[][] $config
-     *
-     * @throws JiraException
-     * @throws \JsonMapper_Exception
-     */
-    protected function executeWithConfig(
-        InputInterface $input,
-        OutputInterface $output,
-        array $config
-    ): int {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $io = new SymfonyStyle($input, $output);
 
         $statuses = $this->initStatuses($input, $io);
 
-        $invert           = $input->getOption('invert');
-        $pattern          = $input->getOption('pattern');
+        $invert = $input->getOption('invert');
+        $pattern = $input->getOption('pattern');
         $branchNameFilter = $input->getArgument('branchname-filter');
 
-        if (
-            !isset(
-                $config['MySQL']['username'],
-                $config['MySQL']['password'],
-                $config['MySQL']['hostname']
-            )
-        ) {
+        if (!isset($this->config->username, $this->config->password, $this->config->hostname)) {
             throw new RuntimeException('MySQL config is incorrect! Username, password and hostname required!');
-        }
-
-        $dbUser     = $config['MySQL']['username'];
-        $dbPassword = $config['MySQL']['password'];
-        $dbHost     = $config['MySQL']['hostname'];
-
-        try {
-            $issueService = new IssueService(new ArrayConfiguration([
-                    'jiraHost'     => $config['Jira']['hostname'],
-                    'jiraUser'     => $config['Jira']['username'],
-                    'jiraPassword' => $config['Jira']['password']
-            ]));
-        } catch (JiraException | Exception $e) {
-            $io->error($e->getMessage());
-
-            return 1;
         }
 
         $io->title('Scan databases');
 
-        $connectionString = sprintf('mysql:host=%s;', $dbHost);
-        $pdo              = new PDO($connectionString, $dbUser, $dbPassword);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $databases = array_column($pdo->query('SHOW DATABASES')->fetchAll(), 'Database');
+        $databases = array_column($this->pdo->query('SHOW DATABASES')->fetchAll(), 'Database');
         $databases = array_filter(
             $databases,
             static function ($dbName) use ($pattern) {
-                    return preg_match($pattern, $dbName);
+                return preg_match($pattern, $dbName);
             }
         );
 
@@ -114,28 +99,24 @@ EOT
 
         foreach ($databases as $database) {
             $branchName = !empty($branchNameFilter)
-                    ? str_replace($branchNameFilter, '', $database)
-                    : $database;
+                ? str_replace($branchNameFilter, '', $database)
+                : $database;
 
             $issue = null;
             try {
-                $issue = $issueService->get($branchName, ['fields' => ['status']]);
+                $issue = $this->issueService->get($branchName, ['fields' => ['status']]);
             } catch (JiraException $e) {
-                if ($e->getCode() === 404) {
-                    $this->logger->critical(
-                        'While cleaning up, I found an unexpected database with no matching Jira Ticket.'
-                            . ' The database will be removed, but you should investigate why it was'
-                            . ' created in the first place!',
-                        [
-                                    'CleanMySQLDatabaseName' => 'Error while matching databases to issues',
-                                    'Unexpected database'    => $database,
-                                    'Branch name'            => $branchName,
-                                    'Possible cause'         => 'Jira ticket was deleted'
-                            ]
-                    );
-                } else {
-                    throw $e;
-                }
+                $this->logger->critical(
+                    'While cleaning up, I found an unexpected database with no matching Jira Ticket.'
+                    . ' The database will be removed, but you should investigate why it was'
+                    . ' created in the first place!',
+                    [
+                        'CleanMySQLDatabaseName' => 'Error while matching databases to issues',
+                        'Unexpected database'    => $database,
+                        'Branch name'            => $branchName,
+                        'Possible cause'         => 'Jira ticket was deleted'
+                    ]
+                );
             }
 
             if (!empty($statuses) && $issue) {
@@ -168,7 +149,7 @@ EOT
                 throw new RuntimeException(sprintf('Database %s is blacklisted!', $db));
             }
 
-            $stmt = $pdo->prepare(sprintf('DROP DATABASE IF EXISTS `%s`', $db));
+            $stmt = $this->pdo->prepare(sprintf('DROP DATABASE IF EXISTS `%s`', $db));
 
             try {
                 $result = $stmt->execute();
@@ -176,21 +157,21 @@ EOT
                     $this->logger->critical(
                         'Dropping the database failed',
                         [
-                                    'CleanMySQLDatabaseName' => 'Error deleting a database!',
-                                    'Unexpected database'    => $db,
-                                    'PDO ErrorInfo'          => $pdo->errorInfo()
-                            ]
+                            'CleanMySQLDatabaseName' => 'Error deleting a database!',
+                            'Unexpected database'    => $db,
+                            'PDO ErrorInfo'          => $this->pdo->errorInfo()
+                        ]
                     );
                 }
             } catch (Throwable $e) {
                 $this->logger->critical(
                     'Dropping the database failed',
                     [
-                                'CleanMySQLDatabaseName' => 'Error deleting a database!',
-                                'Unexpected database'    => $db,
-                                'Errormessage'           => $e->getMessage(),
-                                'StackTrace'             => $e->getTraceAsString()
-                        ]
+                        'CleanMySQLDatabaseName' => 'Error deleting a database!',
+                        'Unexpected database'    => $db,
+                        'Errormessage'           => $e->getMessage(),
+                        'StackTrace'             => $e->getTraceAsString()
+                    ]
                 );
             }
             /** @noinspection DisconnectedForeachInstructionInspection */

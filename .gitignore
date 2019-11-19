@@ -1,3 +1,4 @@
 vendor/
+config/**/*.config.php
 config/config.yml
 jira-rest-client.log
