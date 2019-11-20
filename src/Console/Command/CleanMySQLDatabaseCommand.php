@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
+use duckpony\UseCase\FetchDatabasesByPatternUseCase;
 use JiraRestApi\Issue\IssueService;
 use JiraRestApi\JiraException;
 use PDO;
@@ -36,18 +37,22 @@ class CleanMySQLDatabaseCommand extends Command
     private $config;
     /** @var PDO */
     private $pdo;
+    /** @var FetchDatabasesByPatternUseCase */
+    private $fetchDatabasesByPatternUseCase;
 
     public function __construct(
         LoggerInterface $logger,
         IssueService $issueService,
         Config $config,
-        PDO $pdo
+        PDO $pdo,
+        FetchDatabasesByPatternUseCase $fetchDatabasesByPatternUseCase
     ) {
         parent::__construct('db:clean');
         $this->logger = $logger;
         $this->issueService = $issueService;
         $this->config = $config->get(self::class);
         $this->pdo = $pdo;
+        $this->fetchDatabasesByPatternUseCase = $fetchDatabasesByPatternUseCase;
     }
 
     /**
@@ -87,14 +92,7 @@ EOT
 
         $io->title('Scan databases');
 
-        $databases = array_column($this->pdo->query('SHOW DATABASES')->fetchAll(), 'Database');
-        $databases = array_filter(
-            $databases,
-            static function ($dbName) use ($pattern) {
-                return preg_match($pattern, $dbName);
-            }
-        );
-
+        $databases = $this->fetchDatabasesByPatternUseCase->execute($pattern);
         $remove = [];
 
         foreach ($databases as $database) {
