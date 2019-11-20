@@ -4,30 +4,28 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
+use duckpony\Console\Command\Argument\BranchnameFilterArgumentTrait;
+use duckpony\Console\Command\Option\PatternOptionTrait;
+use duckpony\Console\Command\Option\StatusOptionTrait;
+use duckpony\UseCase\DropDatabaseUseCase;
 use duckpony\UseCase\FetchDatabasesByPatternUseCase;
+use duckpony\UseCase\FetchIssueUseCase;
 use JiraRestApi\Issue\IssueService;
-use JiraRestApi\JiraException;
 use PDO;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Throwable;
 use Zend\Config\Config;
 
 class CleanMySQLDatabaseCommand extends Command
 {
-    use StatusesAwareCommandTrait;
-
-    private const DATABASE_BLACKLIST = [
-        'information_schema',
-        'perfomance_schema',
-        'mysql',
-    ];
+    use BranchnameFilterArgumentTrait;
+    use StatusOptionTrait;
+    use PatternOptionTrait;
 
     /** @var LoggerInterface */
     private $logger;
@@ -39,20 +37,22 @@ class CleanMySQLDatabaseCommand extends Command
     private $pdo;
     /** @var FetchDatabasesByPatternUseCase */
     private $fetchDatabasesByPatternUseCase;
+    /** @var DropDatabaseUseCase */
+    private $dropDatabaseUseCase;
+    /** @var FetchIssueUseCase */
+    private $fetchIssueUseCase;
 
     public function __construct(
-        LoggerInterface $logger,
-        IssueService $issueService,
         Config $config,
-        PDO $pdo,
-        FetchDatabasesByPatternUseCase $fetchDatabasesByPatternUseCase
+        FetchDatabasesByPatternUseCase $fetchDatabasesByPatternUseCase,
+        DropDatabaseUseCase $dropDatabaseUseCase,
+        FetchIssueUseCase $fetchIssueUseCase
     ) {
         parent::__construct('db:clean');
-        $this->logger = $logger;
-        $this->issueService = $issueService;
         $this->config = $config->get(self::class);
-        $this->pdo = $pdo;
         $this->fetchDatabasesByPatternUseCase = $fetchDatabasesByPatternUseCase;
+        $this->dropDatabaseUseCase = $dropDatabaseUseCase;
+        $this->fetchIssueUseCase = $fetchIssueUseCase;
     }
 
     /**
@@ -62,10 +62,11 @@ class CleanMySQLDatabaseCommand extends Command
      */
     protected function configure(): void
     {
-        $this->addOption('status', 's', InputOption::VALUE_REQUIRED, 'Status');
-        $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Branch pattern');
+        $this->configureStatusOption();
+        $this->configureBranchnameFilterArgument();
+        $this->configurePatternOption();
+
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
-        $this->addArgument('branchname-filter', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'Filter branchname');
 
         $this->setDescription('Scans Database and cleans orphaned')
             ->setHelp(
@@ -80,11 +81,11 @@ EOT
     {
         $io = new SymfonyStyle($input, $output);
 
-        $statuses = $this->initStatuses($input, $io);
+        $statuses = $this->getStatusList($input, $io);
 
-        $invert = $input->getOption('invert');
-        $pattern = $input->getOption('pattern');
-        $branchNameFilter = $input->getArgument('branchname-filter');
+        $invert = $this->getInvert($input);
+        $pattern = $this->getPattern($input);
+        $branchNameFilter = $this->getBranchnameFilter($input);
 
         if (!isset($this->config->username, $this->config->password, $this->config->hostname)) {
             throw new RuntimeException('MySQL config is incorrect! Username, password and hostname required!');
@@ -96,26 +97,7 @@ EOT
         $remove = [];
 
         foreach ($databases as $database) {
-            $branchName = !empty($branchNameFilter)
-                ? str_replace($branchNameFilter, '', $database)
-                : $database;
-
-            $issue = null;
-            try {
-                $issue = $this->issueService->get($branchName, ['fields' => ['status']]);
-            } catch (JiraException $e) {
-                $this->logger->critical(
-                    'While cleaning up, I found an unexpected database with no matching Jira Ticket.'
-                    . ' The database will be removed, but you should investigate why it was'
-                    . ' created in the first place!',
-                    [
-                        'CleanMySQLDatabaseName' => 'Error while matching databases to issues',
-                        'Unexpected database'    => $database,
-                        'Branch name'            => $branchName,
-                        'Possible cause'         => 'Jira ticket was deleted'
-                    ]
-                );
-            }
+            $issue = $this->fetchIssueUseCase->execute($database, $branchNameFilter);
 
             if (!empty($statuses) && $issue) {
                 $issueStatus = strtolower($issue->fields->status->name);
@@ -143,35 +125,7 @@ EOT
         $io->progressStart(count($remove));
 
         foreach ($remove as $db) {
-            if (in_array($db, self::DATABASE_BLACKLIST, true)) {
-                throw new RuntimeException(sprintf('Database %s is blacklisted!', $db));
-            }
-
-            $stmt = $this->pdo->prepare(sprintf('DROP DATABASE IF EXISTS `%s`', $db));
-
-            try {
-                $result = $stmt->execute();
-                if (!$result) {
-                    $this->logger->critical(
-                        'Dropping the database failed',
-                        [
-                            'CleanMySQLDatabaseName' => 'Error deleting a database!',
-                            'Unexpected database'    => $db,
-                            'PDO ErrorInfo'          => $this->pdo->errorInfo()
-                        ]
-                    );
-                }
-            } catch (Throwable $e) {
-                $this->logger->critical(
-                    'Dropping the database failed',
-                    [
-                        'CleanMySQLDatabaseName' => 'Error deleting a database!',
-                        'Unexpected database'    => $db,
-                        'Errormessage'           => $e->getMessage(),
-                        'StackTrace'             => $e->getTraceAsString()
-                    ]
-                );
-            }
+            $this->dropDatabaseUseCase->execute($db);
             /** @noinspection DisconnectedForeachInstructionInspection */
             $io->progressAdvance();
         }
