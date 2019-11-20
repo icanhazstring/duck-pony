@@ -4,21 +4,17 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
+use duckpony\Console\Command\Argument\FolderArgumentTrait;
 use FilesystemIterator;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-/**
- * Class RemoveOrphanedSymlinksCommand
- *
- * @package duckpony\Console\Command
- * @author  Michel Petiton <michel.petiton@check24.de>
- */
 class RemoveOrphanedSymlinksCommand extends Command
 {
+    use FolderArgumentTrait;
+
     /**
      * Configures the CLI Command
      *
@@ -26,7 +22,7 @@ class RemoveOrphanedSymlinksCommand extends Command
      */
     protected function configure(): void
     {
-        $this->addArgument('folder', InputArgument::REQUIRED, 'Folder');
+        $this->configureFolderArgument();
 
         $this->setName('symlinks:remove_orphaned')
             ->setDescription('Removes orphaned symlinks of a given folder')
@@ -37,8 +33,7 @@ class RemoveOrphanedSymlinksCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $folder = $input->getArgument('folder');
-        $folder = stream_resolve_include_path($folder);
+        $folder = $this->getFolder($input);
 
         $directoryIterator = new FilesystemIterator($folder, FilesystemIterator::SKIP_DOTS);
         $brokenSymlinks = [];

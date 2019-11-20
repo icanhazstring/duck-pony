@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
+use duckpony\Console\Command\Argument\FolderArgumentTrait;
+use duckpony\Console\Command\Option\PatternOptionTrait;
 use SplFileInfo;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,6 +20,9 @@ use Zend\Config\Config;
 
 class PurgeServiceCommand extends Command
 {
+    use FolderArgumentTrait;
+    use PatternOptionTrait;
+
     /** @var string */
     protected $unitName;
     protected $pattern;
@@ -28,6 +33,7 @@ class PurgeServiceCommand extends Command
     public function __construct(Config $config)
     {
         parent::__construct('service:purge');
+        // Used in traits
         $this->config = $config->get(self::class);
     }
 
@@ -36,9 +42,9 @@ class PurgeServiceCommand extends Command
      */
     protected function configure(): void
     {
-        $this->addArgument('folder', InputArgument::REQUIRED, 'Deployment folder as reference');
+        $this->configureFolderArgument();
         $this->addOption('unit', 'u', InputOption::VALUE_REQUIRED, 'Name of unit');
-        $this->addOption('pattern', 'p', InputOption::VALUE_REQUIRED, 'Instance pattern');
+        $this->configurePatternOption();
 
         $this->setDescription('Scan folder an purge services with same name')
             ->setHelp(
@@ -53,9 +59,9 @@ EOT
     {
         $io = new SymfonyStyle($input, $output);
 
-        $folder = stream_resolve_include_path($input->getArgument('folder'));
+        $folder = $this->getFolder($input);
         $this->unitName = $input->getOption('unit');
-        $this->pattern = $input->getOption('pattern') ?? $this->config->pattern;
+        $this->pattern = $this->getPattern($input);
 
         $finder = new Finder();
         $directories = $finder->depth(0)->directories()->in($folder);

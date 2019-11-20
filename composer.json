@@ -30,7 +30,8 @@
     },
     "scripts": {
         "check": [
-            "phpcs --standard=PSR12 src/",
+            "phpunit",
+            "phpcs --standard=PSR12 src/ test/",
             "phpstan analyse --no-progress"
         ]
     },
