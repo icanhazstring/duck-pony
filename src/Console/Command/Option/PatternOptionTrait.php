@@ -19,6 +19,8 @@ trait PatternOptionTrait
 
     protected function getPattern(InputInterface $input): string
     {
-        return $input->getOption('pattern') ?? $this->config->pattern;
+        $hasConfig = isset($this->config);
+
+        return $input->getOption('pattern') ?? ($hasConfig ? $this->config->pattern : '');
     }
 }
