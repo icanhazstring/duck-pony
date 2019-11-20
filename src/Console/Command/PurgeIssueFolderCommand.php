@@ -23,14 +23,14 @@ use Zend\Config\Config;
 
 class PurgeIssueFolderCommand extends Command
 {
-    protected const DEPRECATION_ALIAS = 'folder:clean';
-
     use AliasDeprecationTrait;
 
     use FolderArgumentTrait;
     use BranchnameFilterArgumentTrait;
     use PatternOptionTrait;
     use StatusOptionTrait;
+
+    protected const DEPRECATION_ALIAS = 'folder:clean';
 
     /** @var FilterSubFoldersService */
     private $filterSubFoldersService;

@@ -12,7 +12,9 @@ trait AliasDeprecationTrait
     protected function checkAliasDeprecation(InputInterface $input, StyleInterface $io): void
     {
         if ($input->getArgument('command') === self::DEPRECATION_ALIAS) {
-            $io->warning(sprintf('Usage of %s is deprecated, please use %s', self::DEPRECATION_ALIAS, $this->getName()));
+            $io->warning(
+                sprintf('Usage of %s is deprecated, please use %s', self::DEPRECATION_ALIAS, $this->getName())
+            );
         }
     }
 }

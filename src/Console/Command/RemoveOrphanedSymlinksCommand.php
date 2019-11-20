@@ -13,11 +13,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RemoveOrphanedSymlinksCommand extends Command
 {
-    protected const DEPRECATION_ALIAS = 'symlinks:remove_orphaned';
-
     use AliasDeprecationTrait;
 
     use FolderArgumentTrait;
+
+    protected const DEPRECATION_ALIAS = 'symlinks:remove_orphaned';
 
     /**
      * Configures the CLI Command

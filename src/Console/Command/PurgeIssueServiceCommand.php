@@ -19,12 +19,12 @@ use Zend\Config\Config;
 
 class PurgeIssueServiceCommand extends Command
 {
-    protected const DEPRECATION_ALIAS = 'service:purge';
-
     use AliasDeprecationTrait;
 
     use FolderArgumentTrait;
     use PatternOptionTrait;
+
+    protected const DEPRECATION_ALIAS = 'service:purge';
 
     /** @var string */
     protected $unitName;

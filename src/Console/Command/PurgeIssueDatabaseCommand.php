@@ -23,13 +23,13 @@ use Zend\Config\Config;
 
 class PurgeIssueDatabaseCommand extends Command
 {
-    protected const DEPRECATION_ALIAS = 'db:clean';
-
     use AliasDeprecationTrait;
 
     use BranchnameFilterArgumentTrait;
     use StatusOptionTrait;
     use PatternOptionTrait;
+
+    protected const DEPRECATION_ALIAS = 'db:clean';
 
     /** @var LoggerInterface */
     private $logger;
