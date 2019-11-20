@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace duckpony\Test\UseCase;
+namespace duckpony\Test\Unit\UseCase;
 
 use duckpony\UseCase\FetchIssueUseCase;
 use Exception;
