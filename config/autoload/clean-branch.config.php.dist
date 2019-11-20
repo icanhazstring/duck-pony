@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use duckpony\Console\Command\CleanBranchCommand;
+use duckpony\Console\Command\PurgeIssueFolderCommand;
 
 return [
-    CleanBranchCommand::class => [
+    PurgeIssueFolderCommand::class => [
         'pattern' =>  '${pattern}'
     ]
 ];

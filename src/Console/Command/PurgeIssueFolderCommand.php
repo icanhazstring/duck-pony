@@ -10,11 +10,8 @@ use duckpony\Console\Command\Option\PatternOptionTrait;
 use duckpony\Console\Command\Option\StatusOptionTrait;
 use duckpony\Service\FilterSubFoldersService;
 use duckpony\UseCase\FetchIssueUseCase;
-use JiraRestApi\Issue\IssueService;
-use JiraRestApi\JiraException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -24,8 +21,12 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Zend\Config\Config;
 
-class CleanBranchCommand extends Command
+class PurgeIssueFolderCommand extends Command
 {
+    protected const DEPRECATION_ALIAS = 'folder:clean';
+
+    use AliasDeprecationTrait;
+
     use FolderArgumentTrait;
     use BranchnameFilterArgumentTrait;
     use PatternOptionTrait;
@@ -45,7 +46,7 @@ class CleanBranchCommand extends Command
         FilterSubFoldersService $filterSubFoldersService,
         FetchIssueUseCase $fetchIssueUseCase
     ) {
-        parent::__construct('folder:clean');
+        parent::__construct('issue:purge-folder');
 
         // Used in traits
         $this->config = $config->get(self::class);
@@ -62,7 +63,8 @@ class CleanBranchCommand extends Command
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force delete');
         $this->configureBranchnameFilterArgument();
 
-        $this->setDescription('Scan folder and clean branches')
+        $this->setAliases([self::DEPRECATION_ALIAS])
+            ->setDescription('Scan folder and clean branches')
             ->setHelp(
                 <<<EOT
 Scan folder iterate over sub folders and removes
@@ -74,6 +76,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $this->checkAliasDeprecation($input, $io);
 
         $statuses = $this->getStatusList($input, $io);
         $folder = $this->getFolder($input);

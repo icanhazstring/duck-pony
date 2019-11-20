@@ -13,6 +13,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RemoveOrphanedSymlinksCommand extends Command
 {
+    protected const DEPRECATION_ALIAS = 'symlinks:remove_orphaned';
+
+    use AliasDeprecationTrait;
+
     use FolderArgumentTrait;
 
     /**
@@ -24,7 +28,8 @@ class RemoveOrphanedSymlinksCommand extends Command
     {
         $this->configureFolderArgument();
 
-        $this->setName('symlinks:remove_orphaned')
+        $this->setName('symlinks:remove-orphaned')
+            ->setAliases([self::DEPRECATION_ALIAS])
             ->setDescription('Removes orphaned symlinks of a given folder')
             ->setHelp('Removes only orphaned symlinks under a given folder without any recursion.');
     }
@@ -32,6 +37,7 @@ class RemoveOrphanedSymlinksCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $this->checkAliasDeprecation($input, $io);
 
         $folder = $this->getFolder($input);
 

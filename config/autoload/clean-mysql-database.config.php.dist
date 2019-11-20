@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use duckpony\Console\Command\CleanMySQLDatabaseCommand;
+use duckpony\Console\Command\PurgeIssueDatabaseCommand;
 
 return [
-    CleanMySQLDatabaseCommand::class => [
+    PurgeIssueDatabaseCommand::class => [
         'hostname' => '${db_host}',
         'username' => '${db_username}',
         'password' => '${db_password}'

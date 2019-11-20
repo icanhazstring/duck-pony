@@ -8,7 +8,6 @@ use duckpony\Console\Command\Argument\FolderArgumentTrait;
 use duckpony\Console\Command\Option\PatternOptionTrait;
 use SplFileInfo;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,8 +17,12 @@ use SystemCtl\SystemCtl;
 use SystemCtl\Unit\Service;
 use Zend\Config\Config;
 
-class PurgeServiceCommand extends Command
+class PurgeIssueServiceCommand extends Command
 {
+    protected const DEPRECATION_ALIAS = 'service:purge';
+
+    use AliasDeprecationTrait;
+
     use FolderArgumentTrait;
     use PatternOptionTrait;
 
@@ -32,7 +35,7 @@ class PurgeServiceCommand extends Command
 
     public function __construct(Config $config)
     {
-        parent::__construct('service:purge');
+        parent::__construct('issue:purge-service');
         // Used in traits
         $this->config = $config->get(self::class);
     }
@@ -46,7 +49,8 @@ class PurgeServiceCommand extends Command
         $this->addOption('unit', 'u', InputOption::VALUE_REQUIRED, 'Name of unit');
         $this->configurePatternOption();
 
-        $this->setDescription('Scan folder an purge services with same name')
+        $this->setAliases([self::DEPRECATION_ALIAS])
+            ->setDescription('Scan folder an purge services with same name')
             ->setHelp(
                 <<<EOT
 Disables and stops systemd services that have
@@ -58,6 +62,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $this->checkAliasDeprecation($input, $io);
 
         $folder = $this->getFolder($input);
         $this->unitName = $input->getOption('unit');
@@ -100,6 +105,8 @@ EOT
         }
 
         $io->progressFinish();
+
+        return 0;
     }
 
     private function filterServices(Service $service): bool
