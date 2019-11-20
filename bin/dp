@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 
+use duckpony\Console\Command\PurgeDatabaseCommand;
 use duckpony\Console\Command\PurgeIssueFolderCommand;
 use duckpony\Console\Command\PurgeIssueDatabaseCommand;
 use duckpony\Console\Command\PurgeIssueServiceCommand;
@@ -38,6 +39,7 @@ if (!class_exists(Application::class)) {
     $app->add($container->get(PurgeIssueServiceCommand::class));
     $app->add($container->get(RemoveOrphanedSymlinksCommand::class));
     $app->add($container->get(PurgeIssueDatabaseCommand::class));
+    $app->add($container->get(PurgeDatabaseCommand::class));
 
     try {
         $app->run();
