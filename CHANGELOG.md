@@ -4,6 +4,10 @@
 ## Changed:
 - Changed yaml config to php configuration files using `zend-config`
 - Renamed some configuration values to reflect general naming (snake_case)
+- Renamed `CleanBranch (folder:clean)` to `PurgeIssueFolder (issue:purge-folder)` (old command name will be still intact as alias)
+- Renamed `CleanMySQLDatabase (db:clean)` to `PurgeIssueDatabase (issue:purge-db)` (old command name will be still intact as alias)
+- Renamed `PurgeService (service:purge)` to `PurgeIssueService (issue:purge-service)` (old command name will be still intact as alias)
+- Changed name of `RemoveOrphanedSymlinks` from `symlinks:remove_orphaned` to `symlinks:remove-orphaned` (old alias still intact)
 
 ## Removed:
 - Removed support of `--config|c` option on certain commands as the configs is created using `tempa-php`

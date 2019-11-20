@@ -21,8 +21,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Zend\Config\Config;
 
-class CleanMySQLDatabaseCommand extends Command
+class PurgeIssueDatabaseCommand extends Command
 {
+    protected const DEPRECATION_ALIAS = 'db:clean';
+
+    use AliasDeprecationTrait;
+
     use BranchnameFilterArgumentTrait;
     use StatusOptionTrait;
     use PatternOptionTrait;
@@ -48,7 +52,7 @@ class CleanMySQLDatabaseCommand extends Command
         DropDatabaseUseCase $dropDatabaseUseCase,
         FetchIssueUseCase $fetchIssueUseCase
     ) {
-        parent::__construct('db:clean');
+        parent::__construct('issue:purge-db');
         $this->config = $config->get(self::class);
         $this->fetchDatabasesByPatternUseCase = $fetchDatabasesByPatternUseCase;
         $this->dropDatabaseUseCase = $dropDatabaseUseCase;
@@ -68,7 +72,8 @@ class CleanMySQLDatabaseCommand extends Command
 
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
 
-        $this->setDescription('Scans Database and cleans orphaned')
+        $this->setAliases([self::DEPRECATION_ALIAS])
+            ->setDescription('Scans Database and cleans orphaned')
             ->setHelp(
                 <<<EOT
 Scans MySQL Databases and removes
@@ -80,6 +85,7 @@ EOT
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $this->checkAliasDeprecation($input, $io);
 
         $statuses = $this->getStatusList($input, $io);
 

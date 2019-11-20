@@ -1,9 +1,9 @@
 #!/usr/bin/env php
 <?php
 
-use duckpony\Console\Command\CleanBranchCommand;
-use duckpony\Console\Command\CleanMySQLDatabaseCommand;
-use duckpony\Console\Command\PurgeServiceCommand;
+use duckpony\Console\Command\PurgeIssueFolderCommand;
+use duckpony\Console\Command\PurgeIssueDatabaseCommand;
+use duckpony\Console\Command\PurgeIssueServiceCommand;
 use duckpony\Console\Command\RemoveOrphanedSymlinksCommand;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -34,10 +34,10 @@ if (!class_exists(Application::class)) {
     $container = require __DIR__ . '/../config/container.php';
 
     $app = $container->get(Application::class);
-    $app->add($container->get(CleanBranchCommand::class));
-    $app->add($container->get(PurgeServiceCommand::class));
+    $app->add($container->get(PurgeIssueFolderCommand::class));
+    $app->add($container->get(PurgeIssueServiceCommand::class));
     $app->add($container->get(RemoveOrphanedSymlinksCommand::class));
-    $app->add($container->get(CleanMySQLDatabaseCommand::class));
+    $app->add($container->get(PurgeIssueDatabaseCommand::class));
 
     try {
         $app->run();
