@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d8a4298e90a2eff300ca98da0072e6f4",
+    "content-hash": "315c34e27519f2d3646790fdcd85b610",
     "packages": [
         {
             "name": "icanhazstring/systemctl-php",
@@ -3715,5 +3715,8 @@
     "platform": {
         "php": "^7.1"
     },
-    "platform-dev": []
+    "platform-dev": {
+        "ext-pdo": "*",
+        "ext-openssl": "*"
+    }
 }
