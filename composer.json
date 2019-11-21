@@ -15,7 +15,6 @@
         "icanhazstring/tempa-php": "^2.0",
         "lesstif/php-jira-rest-client": "^1.10",
         "symfony/console": "^4.0",
-        "symfony/event-dispatcher": "^3.2",
         "symfony/filesystem": "^4.0",
         "symfony/finder": "^4.0",
         "monolog/monolog": "^1.25",
