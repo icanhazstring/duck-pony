@@ -1,6 +1,9 @@
 # Changelog
 
 # [0.6.0] - TBA
+## Added:
+- Added new `PurgeDatabase (purge:database)` command which enables dropping databases using a given `pattern`
+
 ## Changed:
 - Changed yaml config to php configuration files using `zend-config`
 - Renamed some configuration values to reflect general naming (snake_case)

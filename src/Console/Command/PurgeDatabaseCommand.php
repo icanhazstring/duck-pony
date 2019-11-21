@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace duckpony\Console\Command;
 
+use duckpony\Console\Command\Option\DryRunOptionTrait;
 use duckpony\Console\Command\Option\PatternOptionTrait;
 use duckpony\UseCase\DropDatabaseUseCase;
 use duckpony\UseCase\FetchDatabasesByPatternUseCase;
@@ -15,6 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class PurgeDatabaseCommand extends Command
 {
     use PatternOptionTrait;
+    use DryRunOptionTrait;
 
     /** @var FetchDatabasesByPatternUseCase */
     private $fetchDatabasesByPatternUseCase;
@@ -30,9 +32,10 @@ class PurgeDatabaseCommand extends Command
         $this->dropDatabaseUseCase = $dropDatabaseUseCase;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->configurePatternOption();
+        $this->configureDryRunOption();
 
         $this->setDescription('Purge databases based on given pattern')
             ->setHelp(
@@ -48,6 +51,7 @@ EOT
         $io = new SymfonyStyle($input, $output);
 
         $pattern = $this->getPattern($input);
+        $isDryRun = $this->isDryRun($input);
 
         if (!$pattern) {
             $io->error('Missing pattern option.');
@@ -56,9 +60,38 @@ EOT
 
         $databases = $this->fetchDatabasesByPatternUseCase->execute($pattern);
 
-        foreach ($databases as $database) {
-            $this->dropDatabaseUseCase->execute($database);
+        $io->title(
+            sprintf('Scan for databases using pattern "%s".', $pattern)
+        );
+
+        $io->writeln(
+            sprintf('Found %d databases to remove', count($databases)),
+            OutputInterface::VERBOSITY_DEBUG
+        );
+
+        $progressBar = $io->createProgressBar(count($databases));
+
+        if ($isDryRun) {
+            $io->note('DRY-RUN enabled, nothing will be dropped');
         }
+
+        foreach ($databases as $database) {
+            if (!$isDryRun) {
+                $this->dropDatabaseUseCase->execute($database);
+                /** @noinspection DisconnectedForeachInstructionInspection */
+                $progressBar->advance();
+            } else {
+                $io->writeln(
+                    sprintf('<info>Would delete:</info> %s', $database)
+                );
+            }
+        }
+
+        if (!$isDryRun) {
+            $progressBar->finish();
+        }
+
+        $io->newLine();
 
         return 0;
     }
