@@ -17,7 +17,11 @@ class FetchDatabasesByPatternUseCaseTest extends TestCase
     public function itShouldReturnMatchingDatabases(): void
     {
         $statement = $this->prophesize(PDOStatement::class);
-        $statement->fetchAll()->willReturn(['testA', 'testB', 'fubar']);
+        $statement->fetchAll()->willReturn([
+            ['Database' => 'testA'],
+            ['Database' => 'testB'],
+            ['Database' => 'fubar']
+        ]);
 
         $pdo = $this->prophesize(PDO::class);
         $pdo->query('SHOW DATABASES')->willReturn($statement->reveal());
@@ -34,7 +38,10 @@ class FetchDatabasesByPatternUseCaseTest extends TestCase
     public function itShouldReturnEmptyListWhenPatternDoesNotMatch(): void
     {
         $statement = $this->prophesize(PDOStatement::class);
-        $statement->fetchAll()->willReturn(['fubarA', 'fubarB']);
+        $statement->fetchAll()->willReturn([
+            ['Database' => 'fubarA'],
+            ['Database' => 'fubarB']
+        ]);
 
         $pdo = $this->prophesize(PDO::class);
         $pdo->query('SHOW DATABASES')->willReturn($statement->reveal());
