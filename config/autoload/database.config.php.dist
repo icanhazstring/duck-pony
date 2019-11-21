@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-use duckpony\Console\Command\PurgeIssueDatabaseCommand;
-
 return [
-    PurgeIssueDatabaseCommand::class => [
+    PDO::class => [
         'hostname' => '${db_host}',
         'username' => '${db_username}',
         'password' => '${db_password}'

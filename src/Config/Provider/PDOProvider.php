@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace duckpony\Config\Provider;
 
-use duckpony\Console\Command\PurgeIssueDatabaseCommand;
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use PDO;
 use Zend\Config\Config;
@@ -18,7 +17,7 @@ class PDOProvider extends AbstractServiceProvider
     public function register(): void
     {
         /** @var Config $config */
-        $config = $this->getLeagueContainer()->get(Config::class)->get(PurgeIssueDatabaseCommand::class);
+        $config = $this->getLeagueContainer()->get(Config::class)->get(PDO::class);
 
         $connectionString = sprintf('mysql:host=%s;', $config->hostname);
         $pdo = new PDO($connectionString, $config->username, $config->password);

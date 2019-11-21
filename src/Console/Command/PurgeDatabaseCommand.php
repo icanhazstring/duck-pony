@@ -82,7 +82,7 @@ EOT
                 $progressBar->advance();
             } else {
                 $io->writeln(
-                    sprintf('<info>Would delete:</info> %s', $database)
+                    sprintf('<fg=cyan>Would delete:</> %s', $database)
                 );
             }
         }
