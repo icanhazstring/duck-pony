@@ -22,6 +22,9 @@ class FetchDatabasesByPatternUseCase
     public function execute(string $pattern): array
     {
         $databases = $this->pdo->query('SHOW DATABASES')->fetchAll();
+        $databases = array_map(static function ($resultRow) {
+            return $resultRow['Database'];
+        }, $databases);
 
         return array_filter($databases, static function ($database) use ($pattern) {
             return preg_match($pattern, $database);
