@@ -1,6 +1,6 @@
 # Changelog
 
-# [0.6.0] - TBA
+# [0.6.0] - 2019-11-22
 ## Added:
 - Added new `PurgeDatabase (purge:database)` command which enables dropping databases using a given `pattern`
 
