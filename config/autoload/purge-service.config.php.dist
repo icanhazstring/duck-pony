@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use duckpony\Console\Command\PurgeIssueFolderCommand;
+use duckpony\Console\Command\PurgeIssueServiceCommand;
 
 return [
-    PurgeIssueFolderCommand::class => [
+    PurgeIssueServiceCommand::class => [
         'pattern' => '${instance_pattern}'
     ]
 ];

@@ -53,7 +53,7 @@ class PurgeIssueDatabaseCommand extends Command
         FetchIssueUseCase $fetchIssueUseCase
     ) {
         parent::__construct('issue:purge-db');
-        $this->config = $config->get(self::class);
+        $this->config = $config->get(PDO::class);
         $this->fetchDatabasesByPatternUseCase = $fetchDatabasesByPatternUseCase;
         $this->dropDatabaseUseCase = $dropDatabaseUseCase;
         $this->fetchIssueUseCase = $fetchIssueUseCase;
