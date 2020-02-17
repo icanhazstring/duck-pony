@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "315c34e27519f2d3646790fdcd85b610",
+    "content-hash": "4ff885d59cc0cce19a0990b12e828a86",
     "packages": [
         {
             "name": "icanhazstring/systemctl-php",
-            "version": "v0.6.1",
+            "version": "0.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/icanhazstring/systemctl-php.git",
-                "reference": "d98ca386e907bc6588cdd823a1c73672551db464"
+                "reference": "9cca4f3177cd5903ee2b1a473f74574529d301f5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/icanhazstring/systemctl-php/zipball/d98ca386e907bc6588cdd823a1c73672551db464",
-                "reference": "d98ca386e907bc6588cdd823a1c73672551db464",
+                "url": "https://api.github.com/repos/icanhazstring/systemctl-php/zipball/9cca4f3177cd5903ee2b1a473f74574529d301f5",
+                "reference": "9cca4f3177cd5903ee2b1a473f74574529d301f5",
                 "shasum": ""
             },
             "require": {
@@ -48,7 +48,7 @@
                 }
             ],
             "description": "PHP wrapper for systemctl",
-            "time": "2019-03-19T13:07:03+00:00"
+            "time": "2019-04-01T08:46:22+00:00"
         },
         {
             "name": "icanhazstring/tempa-php",
@@ -1128,6 +1128,7 @@
                 "config",
                 "zf"
             ],
+            "abandoned": "laminas/laminas-config",
             "time": "2019-06-08T18:58:54+00:00"
         },
         {
@@ -1174,6 +1175,7 @@
                 "stdlib",
                 "zf"
             ],
+            "abandoned": "laminas/laminas-stdlib",
             "time": "2018-08-28T21:34:05+00:00"
         }
     ],

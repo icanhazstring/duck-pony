@@ -11,7 +11,7 @@
     ],
     "require": {
         "php": "^7.1",
-        "icanhazstring/systemctl-php": "^0.6",
+        "icanhazstring/systemctl-php": "^0.7",
         "icanhazstring/tempa-php": "^2.0",
         "lesstif/php-jira-rest-client": "^1.10",
         "symfony/console": "^4.0",
