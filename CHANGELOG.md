@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.2] - 2020-02-17
+### Changed:
+- Dropped support for `php:^7.1`
+- Required `icanhazstring/systemctl:^0.7`
+
 ## [0.6.1] - 2020-02-17
 ### Fixed:
 - Fixed issue where configuration was wrong [#21](https://github.com/icanhazstring/duck-pony/pull/21) (thanks to [@smuggli](https://github.com/smuggli))
