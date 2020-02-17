@@ -13,8 +13,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Finder\Finder;
-use SystemCtl\SystemCtl;
-use SystemCtl\Unit\Service;
+use icanhazstring\SystemCtl\SystemCtl;
+use icanhazstring\SystemCtl\Unit\Service;
 use Zend\Config\Config;
 
 class PurgeIssueServiceCommand extends Command
