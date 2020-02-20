@@ -11,7 +11,7 @@ use Zend\Config\Config;
 class PDOProvider extends AbstractServiceProvider
 {
     protected $provides = [
-        PDO::class
+        PDOConnectionProvider::class
     ];
 
     public function register(): void
@@ -19,10 +19,8 @@ class PDOProvider extends AbstractServiceProvider
         /** @var Config $config */
         $config = $this->getLeagueContainer()->get(Config::class)->get(PDO::class);
 
-        $connectionString = sprintf('mysql:host=%s;', $config->hostname);
-        $pdo = new PDO($connectionString, $config->username, $config->password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdoConnectionProvider = new PDOConnectionProvider($config->hostname, $config->username, $config->password);
 
-        $this->getLeagueContainer()->add(PDO::class, $pdo);
+        $this->getLeagueContainer()->add(PDOConnectionProvider::class, $pdoConnectionProvider);
     }
 }
