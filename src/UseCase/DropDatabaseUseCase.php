@@ -45,7 +45,7 @@ class DropDatabaseUseCase
                     [
                         'CleanMySQLDatabaseName' => 'Error deleting a database!',
                         'Unexpected database'    => $databaseName,
-                        'PDO ErrorInfo'          => $this->pdoConnectionProvider->errorInfo()
+                        'PDO ErrorInfo'          => $this->pdoConnectionProvider->getConnection()->errorInfo()
                     ]
                 );
             }
