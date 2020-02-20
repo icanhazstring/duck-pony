@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace duckpony\Test\Unit\UseCase;
 
+use duckpony\Config\Provider\PDOConnectionProvider;
 use duckpony\UseCase\DropDatabaseUseCase;
 use Exception;
 use PDO;
@@ -21,9 +22,12 @@ class DropDatabaseUseCaseTest extends TestCase
         $pdo = $this->prophesize(PDO::class);
         $pdo->prepare(Argument::any())->shouldNotBeCalled();
 
+        $pdoConnectionProvider = $this->prophesize(PDOConnectionProvider::class);
+        $pdoConnectionProvider->getConnection()->willReturn($pdo->reveal());
+
         $logger = $this->prophesize(LoggerInterface::class);
 
-        $useCase = new DropDatabaseUseCase($pdo->reveal(), $logger->reveal());
+        $useCase = new DropDatabaseUseCase($pdoConnectionProvider->reveal(), $logger->reveal());
         $useCase->execute('mysql');
     }
 
@@ -37,9 +41,12 @@ class DropDatabaseUseCaseTest extends TestCase
             ->shouldBeCalled()
             ->willReturn(true);
 
+        $pdoConnectionProvider = $this->prophesize(PDOConnectionProvider::class);
+        $pdoConnectionProvider->getConnection()->willReturn($pdo->reveal());
+
         $logger = $this->prophesize(LoggerInterface::class);
 
-        $useCase = new DropDatabaseUseCase($pdo->reveal(), $logger->reveal());
+        $useCase = new DropDatabaseUseCase($pdoConnectionProvider->reveal(), $logger->reveal());
         $useCase->execute('test');
     }
 
@@ -53,10 +60,14 @@ class DropDatabaseUseCaseTest extends TestCase
             ->shouldBeCalled()
             ->willReturn(false);
 
+        $pdoConnectionProvider = $this->prophesize(PDOConnectionProvider::class);
+        $pdoConnectionProvider->getConnection()->willReturn($pdo->reveal());
+
+
         $logger = $this->prophesize(LoggerInterface::class);
         $logger->critical(Argument::cetera())->shouldBeCalled();
 
-        $useCase = new DropDatabaseUseCase($pdo->reveal(), $logger->reveal());
+        $useCase = new DropDatabaseUseCase($pdoConnectionProvider->reveal(), $logger->reveal());
         $useCase->execute('test');
     }
 
@@ -69,10 +80,13 @@ class DropDatabaseUseCaseTest extends TestCase
         $pdo->prepare(Argument::containingString('test'))
             ->willThrow(new Exception());
 
+        $pdoConnectionProvider = $this->prophesize(PDOConnectionProvider::class);
+        $pdoConnectionProvider->getConnection()->willReturn($pdo->reveal());
+
         $logger = $this->prophesize(LoggerInterface::class);
         $logger->critical(Argument::cetera())->shouldBeCalled();
 
-        $useCase = new DropDatabaseUseCase($pdo->reveal(), $logger->reveal());
+        $useCase = new DropDatabaseUseCase($pdoConnectionProvider->reveal(), $logger->reveal());
         $useCase->execute('test');
     }
 }

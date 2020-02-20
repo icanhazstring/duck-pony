@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace duckpony\Test\Unit\UseCase;
 
+use duckpony\Config\Provider\PDOConnectionProvider;
 use duckpony\UseCase\FetchDatabasesByPatternUseCase;
 use PDO;
 use PDOStatement;
@@ -26,7 +27,10 @@ class FetchDatabasesByPatternUseCaseTest extends TestCase
         $pdo = $this->prophesize(PDO::class);
         $pdo->query('SHOW DATABASES')->willReturn($statement->reveal());
 
-        $useCase = new FetchDatabasesByPatternUseCase($pdo->reveal());
+        $pdoConnectionProvider = $this->prophesize(PDOConnectionProvider::class);
+        $pdoConnectionProvider->getConnection()->willReturn($pdo->reveal());
+
+        $useCase = new FetchDatabasesByPatternUseCase($pdoConnectionProvider->reveal());
         $result = $useCase->execute('/test/');
 
         $this->assertCount(2, $result);
@@ -46,7 +50,10 @@ class FetchDatabasesByPatternUseCaseTest extends TestCase
         $pdo = $this->prophesize(PDO::class);
         $pdo->query('SHOW DATABASES')->willReturn($statement->reveal());
 
-        $useCase = new FetchDatabasesByPatternUseCase($pdo->reveal());
+        $pdoConnectionProvider = $this->prophesize(PDOConnectionProvider::class);
+        $pdoConnectionProvider->getConnection()->willReturn($pdo->reveal());
+
+        $useCase = new FetchDatabasesByPatternUseCase($pdoConnectionProvider->reveal());
         $result = $useCase->execute('/test/');
 
         $this->assertEmpty($result);
