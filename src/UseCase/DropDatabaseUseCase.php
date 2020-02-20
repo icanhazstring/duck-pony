@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace duckpony\UseCase;
 
+use duckpony\Config\Provider\PDOConnectionProvider;
 use PDO;
 use Psr\Log\LoggerInterface;
 use Throwable;
@@ -16,14 +17,14 @@ class DropDatabaseUseCase
         'mysql',
     ];
 
-    /** @var PDO */
-    private $pdo;
+    /** @var PDOConnectionProvider */
+    private $pdoConnectionProvider;
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct(PDO $pdo, LoggerInterface $logger)
+    public function __construct(PDOConnectionProvider $pdoConnectionProvider, LoggerInterface $logger)
     {
-        $this->pdo = $pdo;
+        $this->pdoConnectionProvider = $pdoConnectionProvider;
         $this->logger = $logger;
     }
 
@@ -34,7 +35,7 @@ class DropDatabaseUseCase
         }
 
         try {
-            $result = $this->pdo->prepare(
+            $result = $this->pdoConnectionProvider->getConnection()->prepare(
                 sprintf('DROP DATABASE IF EXISTS `%s`', $databaseName)
             )->execute();
 
@@ -44,7 +45,7 @@ class DropDatabaseUseCase
                     [
                         'CleanMySQLDatabaseName' => 'Error deleting a database!',
                         'Unexpected database'    => $databaseName,
-                        'PDO ErrorInfo'          => $this->pdo->errorInfo()
+                        'PDO ErrorInfo'          => $this->pdoConnectionProvider->errorInfo()
                     ]
                 );
             }

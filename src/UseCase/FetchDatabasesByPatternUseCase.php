@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace duckpony\UseCase;
 
+use duckpony\Config\Provider\PDOConnectionProvider;
 use PDO;
 
 class FetchDatabasesByPatternUseCase
 {
-    /** @var PDO */
-    private $pdo;
+    /** @var PDOConnectionProvider */
+    private $pdoConnectionProvider;
 
-    public function __construct(PDO $pdo)
+    public function __construct(PDOConnectionProvider $pdoConnectionProvider)
     {
-        $this->pdo = $pdo;
+        $this->pdoConnectionProvider = $pdoConnectionProvider;
     }
 
     /**
@@ -21,7 +22,7 @@ class FetchDatabasesByPatternUseCase
      */
     public function execute(string $pattern): array
     {
-        $databases = $this->pdo->query('SHOW DATABASES')->fetchAll();
+        $databases = $this->pdoConnectionProvider->getConnection()->query('SHOW DATABASES')->fetchAll();
         $databases = array_map(static function ($resultRow) {
             return $resultRow['Database'];
         }, $databases);
