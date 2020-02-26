@@ -32,11 +32,15 @@ class FetchIssueUseCase
             /** @var Issue $issue */
             $issue = $this->issueService->get($issueName, ['fields' => ['status']]);
         } catch (JiraException $e) {
+            if ($e->getCode() === 404) {
+                // Jira ticket does not exist or was deleted
+                return null;
+            }
             $this->logger->critical(
                 'I encountered a problem fetching issue data from Jira',
                 [
                     'Issue'          => $issueName,
-                    'Possible cause' => 'Jira ticket was deleted'
+                    'Possible cause' => 'Unexpected Jira response'
                 ]
             );
         } catch (Throwable $e) {
