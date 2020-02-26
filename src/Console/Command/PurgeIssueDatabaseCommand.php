@@ -51,7 +51,8 @@ class PurgeIssueDatabaseCommand extends Command
         FetchDatabasesByPatternUseCase $fetchDatabasesByPatternUseCase,
         DropDatabaseUseCase $dropDatabaseUseCase,
         FetchIssueUseCase $fetchIssueUseCase
-    ) {
+    )
+    {
         parent::__construct('issue:purge-db');
         $this->config = $config->get(PDO::class);
         $this->fetchDatabasesByPatternUseCase = $fetchDatabasesByPatternUseCase;
@@ -118,6 +119,8 @@ EOT
                     $remove[] = $database;
                     $io->text(sprintf('Found orphaned database %s', $database));
                 }
+            } else {
+                $remove[] = $database;
             }
         }
 
