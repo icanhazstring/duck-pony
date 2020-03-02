@@ -8,6 +8,8 @@ use duckpony\Console\Command\Argument\BranchnameFilterArgumentTrait;
 use duckpony\Console\Command\Argument\FolderArgumentTrait;
 use duckpony\Console\Command\Option\PatternOptionTrait;
 use duckpony\Console\Command\Option\StatusOptionTrait;
+use duckpony\Exception\JiraTicketNotFoundException;
+use duckpony\Rule\IsIssueWithGivenStatusRule;
 use duckpony\Service\FilterSubFoldersService;
 use duckpony\UseCase\FetchIssueUseCase;
 use Psr\Log\LoggerInterface;
@@ -40,11 +42,14 @@ class PurgeIssueFolderCommand extends Command
     private $config;
     /** @var FetchIssueUseCase */
     private $fetchIssueUseCase;
+    /** @var IsIssueWithGivenStatusRule */
+    private $isIssueWithGivenStatusRule;
 
     public function __construct(
         Config $config,
         FilterSubFoldersService $filterSubFoldersService,
-        FetchIssueUseCase $fetchIssueUseCase
+        FetchIssueUseCase $fetchIssueUseCase,
+        IsIssueWithGivenStatusRule $isIssueWithGivenStatusRule
     ) {
         parent::__construct('issue:purge-folder');
 
@@ -52,6 +57,7 @@ class PurgeIssueFolderCommand extends Command
         $this->config = $config->get(self::class);
         $this->filterSubFoldersService = $filterSubFoldersService;
         $this->fetchIssueUseCase = $fetchIssueUseCase;
+        $this->isIssueWithGivenStatusRule = $isIssueWithGivenStatusRule;
     }
 
     protected function configure(): void
@@ -136,23 +142,17 @@ EOT
         $remove = [];
         $notfound = [];
 
+        /* @var SplFileInfo $dir */
         foreach ($directories->directories() as $index => $dir) {
-            /* @var SplFileInfo $dir */
-            $issue = $this->fetchIssueUseCase->execute($dir->getFilename(), $branchNameFilter);
-
-            if ($issue) {
-                $issueStatus = strtolower($issue->fields->status->name);
-
-                $statusFound = in_array($issueStatus, $statuses, true);
-                if ($invert) {
-                    if (!$statusFound) {
-                        $remove[] = $dir;
-                    }
-                } elseif ($statusFound) {
-                    $remove[] = $dir;
-                }
-            } else {
+            $issue = null;
+            try {
+                $issue = $this->fetchIssueUseCase->execute($dir->getFilename(), $branchNameFilter);
+            } catch (JiraTicketNotFoundException $e) {
                 $notfound[] = $dir;
+            }
+
+            if ($this->isIssueWithGivenStatusRule->appliesTo($issue, $statuses, $invert)) {
+                $remove[] = $dir;
             }
 
             /** @noinspection DisconnectedForeachInstructionInspection */

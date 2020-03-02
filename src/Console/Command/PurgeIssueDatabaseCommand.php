@@ -7,6 +7,8 @@ namespace duckpony\Console\Command;
 use duckpony\Console\Command\Argument\BranchnameFilterArgumentTrait;
 use duckpony\Console\Command\Option\PatternOptionTrait;
 use duckpony\Console\Command\Option\StatusOptionTrait;
+use duckpony\Exception\JiraTicketNotFoundException;
+use duckpony\Rule\IsIssueWithGivenStatusRule;
 use duckpony\UseCase\DropDatabaseUseCase;
 use duckpony\UseCase\FetchDatabasesByPatternUseCase;
 use duckpony\UseCase\FetchIssueUseCase;
@@ -45,18 +47,22 @@ class PurgeIssueDatabaseCommand extends Command
     private $dropDatabaseUseCase;
     /** @var FetchIssueUseCase */
     private $fetchIssueUseCase;
+    /** @var IsIssueWithGivenStatusRule */
+    private $isIssueWithGivenStatusRule;
 
     public function __construct(
         Config $config,
         FetchDatabasesByPatternUseCase $fetchDatabasesByPatternUseCase,
         DropDatabaseUseCase $dropDatabaseUseCase,
-        FetchIssueUseCase $fetchIssueUseCase
-    ){
+        FetchIssueUseCase $fetchIssueUseCase,
+        IsIssueWithGivenStatusRule $isIssueWithGivenStatusRule
+    ) {
         parent::__construct('issue:purge-db');
         $this->config = $config->get(PDO::class);
         $this->fetchDatabasesByPatternUseCase = $fetchDatabasesByPatternUseCase;
         $this->dropDatabaseUseCase = $dropDatabaseUseCase;
         $this->fetchIssueUseCase = $fetchIssueUseCase;
+        $this->isIssueWithGivenStatusRule = $isIssueWithGivenStatusRule;
     }
 
     /**
@@ -103,22 +109,14 @@ EOT
         $remove = [];
 
         foreach ($databases as $database) {
-            $issue = $this->fetchIssueUseCase->execute($database, $branchNameFilter);
+            $issue = null;
+            try {
+                $issue = $this->fetchIssueUseCase->execute($database, $branchNameFilter);
+            } catch (JiraTicketNotFoundException $e) {
+                $remove[] = $database;
+            }
 
-            if (!empty($statuses) && $issue) {
-                $issueStatus = strtolower($issue->fields->status->name);
-
-                $statusFound = in_array($issueStatus, $statuses, true);
-                if ($invert) {
-                    if (!$statusFound) {
-                        $remove[] = $database;
-                        $io->text(sprintf('Found orphaned database %s', $database));
-                    }
-                } elseif ($statusFound) {
-                    $remove[] = $database;
-                    $io->text(sprintf('Found orphaned database %s', $database));
-                }
-            } else {
+            if ($this->isIssueWithGivenStatusRule->appliesTo($issue, $statuses, $invert)) {
                 $remove[] = $database;
             }
         }
