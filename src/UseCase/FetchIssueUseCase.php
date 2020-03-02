@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace duckpony\UseCase;
 
+use duckpony\Exception\JiraTicketNotFoundException;
 use JiraRestApi\Issue\Issue;
 use JiraRestApi\Issue\IssueService;
 use JiraRestApi\JiraException;
@@ -23,6 +24,9 @@ class FetchIssueUseCase
         $this->logger = $logger;
     }
 
+    /**
+     * @throws JiraTicketNotFoundException
+     */
     public function execute(string $issueName, array $issueNameFilter = []): ?Issue
     {
         $issueName = str_replace($issueNameFilter, '', $issueName);
@@ -33,8 +37,10 @@ class FetchIssueUseCase
             $issue = $this->issueService->get($issueName, ['fields' => ['status']]);
         } catch (JiraException $e) {
             if ($e->getCode() === 404) {
-                // Jira ticket does not exist or was deleted
-                return null;
+                throw new JiraTicketNotFoundException(
+                    'Jira ticket does not exist or was deleted',
+                    $e->getCode()
+                );
             }
             $this->logger->critical(
                 'I encountered a problem fetching issue data from Jira',
