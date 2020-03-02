@@ -39,7 +39,8 @@ class FetchIssueUseCase
             if ($e->getCode() === 404) {
                 throw new JiraTicketNotFoundException(
                     'Jira ticket does not exist or was deleted',
-                    $e->getCode()
+                    $e->getCode(),
+                    $e
                 );
             }
             $this->logger->critical(
