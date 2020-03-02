@@ -1,8 +1,13 @@
 # Changelog
 
-## [0.6.3] - 2020-03-02
+## [0.6.4] - 2020-03-02
 ### Changed:
-- Added a `JiraTicketNotFound` exception to better analyse deleted/or missing jira tickets. Which resultet in database or folder to be ignored instead of removed. [#22](https://github.com/icanhazstring/duck-pony/pull/22) (thanks to [@d-feller](https://github.com/d-feller))
+- Added a `JiraTicketNotFound` exception to better analyse deleted/or missing jira tickets. Which resultet in database or folder to be ignored instead of removed. [#24](https://github.com/icanhazstring/duck-pony/pull/24) (thanks to [@d-feller](https://github.com/d-feller))
+
+## [0.6.3] - 2020-02-20
+### Changed:
+- Wrapped `PDOConnection` to avoid instant connection which makes it impossible to use this tool on systems which don't have
+pdo installed [#23](https://github.com/icanhazstring/duck-pony/pull/23) (thanks to [@mheist](https://github.com/mheist))
 
 ## [0.6.2] - 2020-02-17
 ### Changed:
