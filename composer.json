@@ -1,6 +1,6 @@
 {
     "name": "icanhazstring/duck-pony",
-    "type": "project",
+    "type": "library",
     "description": "Secret Duck Pony",
     "license": "MIT",
     "authors": [
@@ -17,7 +17,7 @@
         "symfony/console": "^4.0",
         "symfony/filesystem": "^4.0",
         "symfony/finder": "^4.0",
-        "monolog/monolog": "^1.25",
+        "monolog/monolog": "^2.0",
         "league/container": "^3.3",
         "zendframework/zend-config": "^3.3"
     },
