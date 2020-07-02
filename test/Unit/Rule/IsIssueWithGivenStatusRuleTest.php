@@ -6,6 +6,7 @@ use duckpony\Exception\JiraTicketNotFoundException;
 use duckpony\Rule\IsIssueWithGivenStatusRule;
 use JiraRestApi\Issue\Issue;
 use JiraRestApi\Issue\IssueField;
+use JiraRestApi\Issue\IssueStatus;
 use PHPUnit\Framework\TestCase;
 
 class IsIssueWithGivenStatusRuleTest extends TestCase
@@ -14,7 +15,12 @@ class IsIssueWithGivenStatusRuleTest extends TestCase
     {
 
         $issue = new Issue();
-        $issue->fields->status->name = 'test1';
+        $status = new IssueStatus();
+        $status->name = 'test1';
+        $field = new IssueField();
+        $field->status = $status;
+        $issue->fields = $field;
+
         return [
             'it should return true given an issue with status included in statuses and not inverted' => [
                 'given' => [
