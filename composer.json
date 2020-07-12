@@ -11,6 +11,7 @@
     ],
     "require": {
         "php": "^7.2",
+        "ext-pdo": "*",
         "icanhazstring/systemctl-php": "^0.7",
         "icanhazstring/tempa-php": "^2.0",
         "lesstif/php-jira-rest-client": "^1.10",
@@ -22,7 +23,6 @@
         "zendframework/zend-config": "^3.3"
     },
     "require-dev": {
-        "ext-pdo": "*",
         "ext-openssl": "*",
         "roave/security-advisories": "dev-master",
         "squizlabs/php_codesniffer": "^3.5",

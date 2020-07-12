@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace duckpony\Console\Command;
 
 use duckpony\Console\Command\Option\DryRunOptionTrait;
+use duckpony\Console\Command\Option\HostNameOptionTrait;
 use duckpony\Console\Command\Option\PatternOptionTrait;
 use duckpony\UseCase\DropDatabaseUseCase;
 use duckpony\UseCase\FetchDatabasesByPatternUseCase;
@@ -17,6 +18,7 @@ class PurgeDatabaseCommand extends Command
 {
     use PatternOptionTrait;
     use DryRunOptionTrait;
+    use HostNameOptionTrait;
 
     /** @var FetchDatabasesByPatternUseCase */
     private $fetchDatabasesByPatternUseCase;
@@ -36,6 +38,7 @@ class PurgeDatabaseCommand extends Command
     {
         $this->configurePatternOption();
         $this->configureDryRunOption();
+        $this->configureHostNameOption();
 
         $this->setDescription('Purge databases based on given pattern')
             ->setHelp(
@@ -51,7 +54,16 @@ EOT
         $io = new SymfonyStyle($input, $output);
 
         $pattern = $this->getPattern($input);
+        $hostName = $this->getHostName($input);
         $isDryRun = $this->isDryRun($input);
+
+        $canRunOnHost = $this->canRunOnHost($hostName, $io);
+
+        if ($canRunOnHost === false) {
+            $io->note('You are running this command on a non master host and have configured to in this case. ' .
+                'Please make sure you are on master or configure the host_name option.');
+            die(0);
+        }
 
         if (!$pattern) {
             $io->error('Missing pattern option.');
