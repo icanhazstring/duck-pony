@@ -105,7 +105,8 @@ EOT
         $canRunOnHost = $this->canRunOnHost($hostName, $io);
 
         if ($canRunOnHost === false) {
-            $io->note('You are running this command on master and have configured to stop if so. Please make sure you are on master or configure the host_name option.');
+            $io->note('You are running this command on master and have configured to stop if so.' .
+                ' Please make sure you are on master or configure the host_name option.');
             die(0);
         }
 
