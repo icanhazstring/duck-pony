@@ -18,6 +18,7 @@
          slack_token=SLACK_TOKEN \
          slack_channel=SLACK_CHANNEL
      ```
+- add the `host_name` option to `purge:database` and `db:clean` with the master's hostname to prevent accidentally dropping databases on slaves
 
 ## 0.3 to 0.4
 Adjust config.yml:
