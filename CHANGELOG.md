@@ -2,7 +2,7 @@
 
 ## [0.6.5] - 2020-07-12
 ### Added:
-- Added a `host_name` option to prevent accidentally database purges on non-master hosts.
+- Added a `host_name` option to prevent accidentally database purges on non-master hosts.[#26](https://github.com/icanhazstring/duck-pony/pull/26) (thanks to [@doganoo](https://github.com/doganoo))
 ### Changed:
 - Updated `monolog` library to v2.x.
 
