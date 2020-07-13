@@ -1,8 +1,9 @@
 # Changelog
 
 ## [0.6.5] - 2020-07-12
-### Changed:
+### Added:
 - Added a `host_name` option to prevent accidentally database purges on non-master hosts.
+### Changed:
 - Updated `monolog` library to v2.x.
 
 ## [0.6.4] - 2020-03-02
