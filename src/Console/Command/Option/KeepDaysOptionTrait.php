@@ -7,7 +7,6 @@ namespace duckpony\Console\Command\Option;
 use InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Style\StyleInterface;
 
 trait KeepDaysOptionTrait
 {
