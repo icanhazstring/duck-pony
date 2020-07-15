@@ -6,12 +6,15 @@ namespace duckpony\Console\Command;
 
 use duckpony\Console\Command\Argument\BranchnameFilterArgumentTrait;
 use duckpony\Console\Command\Argument\FolderArgumentTrait;
+use duckpony\Console\Command\Option\KeepDaysOptionTrait;
 use duckpony\Console\Command\Option\PatternOptionTrait;
 use duckpony\Console\Command\Option\StatusOptionTrait;
 use duckpony\Exception\JiraTicketNotFoundException;
+use duckpony\Rule\IsDirectoryTooOld;
 use duckpony\Rule\IsIssueWithGivenStatusRule;
 use duckpony\Service\FilterSubFoldersService;
 use duckpony\UseCase\FetchIssueUseCase;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -31,6 +34,7 @@ class PurgeIssueFolderCommand extends Command
     use BranchnameFilterArgumentTrait;
     use PatternOptionTrait;
     use StatusOptionTrait;
+    use KeepDaysOptionTrait;
 
     protected const DEPRECATION_ALIAS = 'folder:clean';
 
@@ -44,12 +48,15 @@ class PurgeIssueFolderCommand extends Command
     private $fetchIssueUseCase;
     /** @var IsIssueWithGivenStatusRule */
     private $isIssueWithGivenStatusRule;
+    /** @var IsDirectoryTooOld */
+    private $isDirectoryTooOld;
 
     public function __construct(
         Config $config,
         FilterSubFoldersService $filterSubFoldersService,
         FetchIssueUseCase $fetchIssueUseCase,
-        IsIssueWithGivenStatusRule $isIssueWithGivenStatusRule
+        IsIssueWithGivenStatusRule $isIssueWithGivenStatusRule,
+        IsDirectoryTooOld $isDirectoryTooOld
     ) {
         parent::__construct('issue:purge-folder');
 
@@ -58,6 +65,7 @@ class PurgeIssueFolderCommand extends Command
         $this->filterSubFoldersService = $filterSubFoldersService;
         $this->fetchIssueUseCase = $fetchIssueUseCase;
         $this->isIssueWithGivenStatusRule = $isIssueWithGivenStatusRule;
+        $this->isDirectoryTooOld = $isDirectoryTooOld;
     }
 
     protected function configure(): void
@@ -65,6 +73,7 @@ class PurgeIssueFolderCommand extends Command
         $this->configureFolderArgument();
         $this->configureStatusOption();
         $this->configurePatternOption();
+        $this->configureKeepDaysOption();
         $this->addOption('yes', 'y', InputOption::VALUE_NONE, 'Confirm questions with yes');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Force delete');
         $this->configureBranchnameFilterArgument();
@@ -92,6 +101,13 @@ EOT
         $pattern = $this->getPattern($input);
         $branchNameFilter = $this->getBranchnameFilter($input);
 
+        try {
+            $keepDays = $this->getKeepDays($input);
+        } catch (InvalidArgumentException $e) {
+            $io->error($e->getMessage());
+            die(1);
+        }
+
         $finder = new Finder();
         $directories = $finder->depth(0)->directories()->in($folder);
 
@@ -112,7 +128,8 @@ EOT
             $directories,
             $branchNameFilter,
             $statuses,
-            $invert
+            $invert,
+            $keepDays
         );
 
         $this->removeMatchingBranches($remove, $io);
@@ -128,6 +145,7 @@ EOT
      * @param array        $branchNameFilter
      * @param array        $statuses
      * @param bool         $invert
+     * @param int|null     $keepDays
      * @return array
      */
     protected function findBranchesToCleanup(
@@ -135,7 +153,8 @@ EOT
         Finder $directories,
         array $branchNameFilter,
         array $statuses,
-        bool $invert
+        bool $invert,
+        ?int $keepDays
     ): array {
         $progressBar = $io->createProgressBar(count($directories->directories()));
 
@@ -151,7 +170,12 @@ EOT
                 $notfound[] = $dir;
             }
 
-            if ($this->isIssueWithGivenStatusRule->appliesTo($issue, $statuses, $invert)) {
+            $branchIsTooOld = false;
+            if ($keepDays !== null) {
+                $branchIsTooOld = $this->isDirectoryTooOld->appliesTo($dir, $keepDays);
+            }
+
+            if ($branchIsTooOld || $this->isIssueWithGivenStatusRule->appliesTo($issue, $statuses, $invert)) {
                 $remove[] = $dir;
             }
 
