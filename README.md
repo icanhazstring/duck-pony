@@ -34,7 +34,7 @@ $ vendor/bin/tempa file:substitute \
     instance_pattern=SYSTEMD_SERVICE_PATTERN \
     slack_token=SLACK_TOKEN \
     slack_channel=SLACK_CHANNEL
-    
+
 ```
 
 > The `pattern` is used to identify tickets and folders alike. This means, your folders **MUST** have the same name
@@ -59,20 +59,21 @@ Arguments:
   branchname-filter      Remove parts of the folder name to match jira ticket
 
 Options:
-  -s, --status=STATUS    Status
-  -p, --pattern=PATTERN  Branch pattern
-  -i, --invert           Invert status
-  -y, --yes              Confirm questions with yes
-  -c, --config=CONFIG    Config [default: "/home/vendor/duck-pony/config/config.yml"]
-  -f, --force            Force delete
-  -h, --help             Display this help message
-  -q, --quiet            Do not output any message
-  -V, --version          Display this application version
-      --ansi             Force ANSI output
-      --no-ansi          Disable ANSI output
-  -n, --no-interaction   Do not ask any interactive question
-  -v|vv|vvv, --verbose   Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
-  --branchname-filter    Remove parts of the branchname for better jira ticket matching
+  -s, --status=STATUS          Status
+  -p, --pattern=PATTERN        Branch pattern
+      --keep-days[=KEEP-DAYS]  The number of days a branch is allowed to remain.
+  -i, --invert                 Invert status
+  -y, --yes                    Confirm questions with yes
+  -c, --config=CONFIG          Config [default: "/home/vendor/duck-pony/config/config.yml"]
+  -f, --force                  Force delete
+  -h, --help                   Display this help message
+  -q, --quiet                  Do not output any message
+  -V, --version                Display this application version
+      --ansi                   Force ANSI output
+      --no-ansi                Disable ANSI output
+  -n, --no-interaction         Do not ask any interactive question
+  -v|vv|vvv, --verbose         Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+  --branchname-filter          Remove parts of the branchname for better jira ticket matching
 
 Help:
   Scan folder iterate over sub folders and removes
@@ -117,8 +118,8 @@ Assuming the following folder structure and services:
 ```
 /path/to/folder
  |- ABC-123
- 
- 
+
+
 systemd services:
 - awesome@ABC-124
 - awesome@ABC-125
@@ -174,7 +175,7 @@ Usage:
   db:clean [options] [--] <pattern>
 
 Arguments:
-  branchname-filter      Remove parts of the folder name to match jira ticket                 
+  branchname-filter      Remove parts of the folder name to match jira ticket
 
 Options:
   -s, --status=STATUS    Status
