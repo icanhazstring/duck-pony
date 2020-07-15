@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace duckpony\Test\Unit\Console\Command\Option;
@@ -25,10 +26,12 @@ class KeepDaysOptionTraitTest extends TestCase
         $this->input = $input = new ArrayInput(
             [],
             new InputDefinition([
-                new InputOption('keep-days',
+                new InputOption(
+                    'keep-days',
                     null,
                     InputOption::VALUE_OPTIONAL,
-                    'The number of days a branch is allowed to remain.')
+                    'The number of days a branch is allowed to remain.'
+                ),
             ])
         );
 

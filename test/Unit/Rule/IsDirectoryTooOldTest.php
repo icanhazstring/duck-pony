@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace duckpony\Test\Unit\Rule;
@@ -13,18 +14,18 @@ final class IsDirectoryTooOldTest extends TestCase
 {
     public function provideDirectories(): array
     {
-        /** @var SplFileInfo|MockObject $file */
-        $file = $this->createMock(SplFileInfo::class);
-        $file->method('getMTime')->willReturn(strtotime('-2 day', time()));
+        /** @var SplFileInfo|MockObject $dir */
+        $dir = $this->createMock(SplFileInfo::class);
+        $dir->method('getMTime')->willReturn(strtotime('-2 day', time()));
 
         return [
             'not too old' => [
-                'dir' => $file,
+                'dir' => $dir,
                 'keepDays' => 2,
                 'expectedResult' => false,
             ],
             'too old' => [
-                'dir' => $file,
+                'dir' => $dir,
                 'keepDays' => 1,
                 'expectedResult' => true,
             ],
