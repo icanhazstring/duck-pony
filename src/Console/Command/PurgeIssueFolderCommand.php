@@ -105,7 +105,7 @@ EOT
             $keepDays = $this->getKeepDays($input);
         } catch (InvalidArgumentException $e) {
             $io->error($e->getMessage());
-            die(1);
+            return 1;
         }
 
         $finder = new Finder();
