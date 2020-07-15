@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+### Added:
+- Added the `keep-days` option to the `folder:clean` command to specify the maximum amount of days a branch is allowed to remain
+  - The branch will be deleted after the maximum amount of days, even if the issue status does not match
+
 ## [0.6.5] - 2020-07-12
 ### Added:
 - Added a `host_name` option to prevent accidentally database purges on non-master hosts.[#26](https://github.com/icanhazstring/duck-pony/pull/26) (thanks to [@doganoo](https://github.com/doganoo))
