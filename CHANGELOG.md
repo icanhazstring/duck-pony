@@ -8,6 +8,10 @@
 ### Removed:
 - Nothing
 
+## [0.6.7] - 2020-08-19
+### Changed:
+- Dropped the -h short option definition for host name as h is a reserved option
+
 ## [0.6.6] - 2020-07-15
 ### Added:
 - Added the `keep-days` option to the `folder:clean` command to specify the maximum amount of days a branch is allowed to remain

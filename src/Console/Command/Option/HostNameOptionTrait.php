@@ -17,7 +17,7 @@ trait HostNameOptionTrait
 
     protected function configureHostNameOption(): void
     {
-        $this->addOption('host_name', 'h', InputOption::VALUE_REQUIRED, 'The hostname of the master host machine');
+        $this->addOption('host_name', null, InputOption::VALUE_REQUIRED, 'The hostname of the master host machine');
     }
 
     protected function getHostName(InputInterface $input): ?string
