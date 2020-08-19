@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased]
+### Added:
+- Nothing
+### Changed:
+- Nothing
+### Removed:
+- Nothing
+
+## [0.6.6] - 2020-07-15
+### Added:
+- Added the `keep-days` option to the `folder:clean` command to specify the maximum amount of days a branch is allowed to remain
+  - The branch will be deleted after the maximum amount of days, even if the issue status does not match
+
+## [0.6.5] - 2020-07-12
+### Added:
+- Added a `host_name` option to prevent accidentally database purges on non-master hosts.[#26](https://github.com/icanhazstring/duck-pony/pull/26) (thanks to [@doganoo](https://github.com/doganoo))
+### Changed:
+- Updated `monolog` library to v2.x.
+
 ## [0.6.4] - 2020-03-02
 ### Changed:
 - Added a `JiraTicketNotFound` exception to better analyse deleted/or missing jira tickets. Which resultet in database or folder to be ignored instead of removed. [#24](https://github.com/icanhazstring/duck-pony/pull/24) (thanks to [@d-feller](https://github.com/d-feller))
@@ -32,7 +51,7 @@ pdo installed [#23](https://github.com/icanhazstring/duck-pony/pull/23) (thanks 
 
 ### Removed:
 - Removed support of `--config|c` option on certain commands as the configs is created using `tempa-php`
-- Removed `symfony/yaml` as a dependency 
+- Removed `symfony/yaml` as a dependency
 
 ## [0.5.1] - 2019-11-19
 ### Fixed:

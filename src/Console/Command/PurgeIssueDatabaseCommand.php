@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace duckpony\Console\Command;
 
 use duckpony\Console\Command\Argument\BranchnameFilterArgumentTrait;
+use duckpony\Console\Command\Option\HostNameOptionTrait;
 use duckpony\Console\Command\Option\PatternOptionTrait;
 use duckpony\Console\Command\Option\StatusOptionTrait;
 use duckpony\Exception\JiraTicketNotFoundException;
@@ -30,6 +31,7 @@ class PurgeIssueDatabaseCommand extends Command
     use BranchnameFilterArgumentTrait;
     use StatusOptionTrait;
     use PatternOptionTrait;
+    use HostNameOptionTrait;
 
     protected const DEPRECATION_ALIAS = 'db:clean';
 
@@ -75,6 +77,7 @@ class PurgeIssueDatabaseCommand extends Command
         $this->configureStatusOption();
         $this->configureBranchnameFilterArgument();
         $this->configurePatternOption();
+        $this->configureHostNameOption();
 
         $this->addOption('invert', 'i', InputOption::VALUE_NONE, 'Invert status');
 
@@ -97,7 +100,15 @@ EOT
 
         $invert = $this->getInvert($input);
         $pattern = $this->getPattern($input);
+        $hostName = $this->getHostName($input);
         $branchNameFilter = $this->getBranchnameFilter($input);
+        $canRunOnHost = $this->canRunOnHost($hostName, $io);
+
+        if ($canRunOnHost === false) {
+            $io->note('You are running this command on master and have configured to stop if so.' .
+                ' Please make sure you are on master or configure the host_name option.');
+            die(0);
+        }
 
         if (!isset($this->config->username, $this->config->password, $this->config->hostname)) {
             throw new RuntimeException('MySQL config is incorrect! Username, password and hostname required!');
