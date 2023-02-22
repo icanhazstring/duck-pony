@@ -6,21 +6,30 @@ namespace duckpony\Config\Provider;
 
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use PDO;
-use Zend\Config\Config;
+use Laminas\Config\Config;
 
 class PDOProvider extends AbstractServiceProvider
 {
-    protected $provides = [
-        PDOConnectionProvider::class
+    protected array $provides = [
+        PDOConnectionProvider::class,
     ];
+
+    public function provides(string $id): bool
+    {
+        return in_array($id, $this->provides);
+    }
 
     public function register(): void
     {
+        $container = $this->getContainer();
         /** @var Config $config */
-        $config = $this->getLeagueContainer()->get(Config::class)->get(PDO::class);
+        $config = $container->get(Config::class)->get(PDO::class);
 
-        $pdoConnectionProvider = new PDOConnectionProvider($config->hostname, $config->username, $config->password);
-
-        $this->getLeagueContainer()->add(PDOConnectionProvider::class, $pdoConnectionProvider);
+        $pdoConnectionProvider = new PDOConnectionProvider(
+            $config->get('hostname'),
+            $config->get('username'),
+            $config->get('password')
+        );
+        $container->add(PDOConnectionProvider::class, $pdoConnectionProvider);
     }
 }

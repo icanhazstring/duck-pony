@@ -15,7 +15,6 @@ use duckpony\Rule\IsIssueWithGivenStatusRule;
 use duckpony\Service\FilterSubFoldersService;
 use duckpony\UseCase\FetchIssueUseCase;
 use InvalidArgumentException;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -24,7 +23,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Zend\Config\Config;
+use Laminas\Config\Config;
 
 class PurgeIssueFolderCommand extends Command
 {
@@ -40,8 +39,6 @@ class PurgeIssueFolderCommand extends Command
 
     /** @var FilterSubFoldersService */
     private $filterSubFoldersService;
-    /** @var LoggerInterface */
-    private $logger;
     /** @var Config */
     private $config;
     /** @var FetchIssueUseCase */

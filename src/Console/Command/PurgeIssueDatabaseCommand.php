@@ -13,16 +13,14 @@ use duckpony\Rule\IsIssueWithGivenStatusRule;
 use duckpony\UseCase\DropDatabaseUseCase;
 use duckpony\UseCase\FetchDatabasesByPatternUseCase;
 use duckpony\UseCase\FetchIssueUseCase;
-use JiraRestApi\Issue\IssueService;
 use PDO;
-use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Zend\Config\Config;
+use Laminas\Config\Config;
 
 class PurgeIssueDatabaseCommand extends Command
 {
@@ -35,14 +33,9 @@ class PurgeIssueDatabaseCommand extends Command
 
     protected const DEPRECATION_ALIAS = 'db:clean';
 
-    /** @var LoggerInterface */
-    private $logger;
-    /** @var IssueService */
-    private $issueService;
     /** @var Config */
     private $config;
-    /** @var PDO */
-    private $pdo;
+
     /** @var FetchDatabasesByPatternUseCase */
     private $fetchDatabasesByPatternUseCase;
     /** @var DropDatabaseUseCase */

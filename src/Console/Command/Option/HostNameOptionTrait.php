@@ -9,7 +9,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * @uses \Zend\Config\Config
+ * @uses \Laminas\Config\Config
  * @author Dogan Ucar <dogan@dogan-ucar.de>
  */
 trait HostNameOptionTrait

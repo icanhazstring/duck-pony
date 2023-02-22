@@ -10,10 +10,14 @@ use JiraRestApi\Issue\IssueService;
 use JiraRestApi\JiraException;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophet;
 use Psr\Log\LoggerInterface;
 
 class FetchIssueUseCaseTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */
@@ -50,7 +54,7 @@ class FetchIssueUseCaseTest extends TestCase
     public function itShouldCallLoggerOnKnownJiraException(): void
     {
         $issueService = $this->prophesize(IssueService::class);
-        $issueService->get(Argument::cetera())->willThrow(new JiraException());
+        $issueService->get(Argument::cetera())->willThrow(new JiraException(""));
 
         $logger = $this->prophesize(LoggerInterface::class);
         $logger->critical(
