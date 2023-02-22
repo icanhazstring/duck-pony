@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
- * @uses \Zend\Config\Config
+ * @uses \Laminas\Config\Config
  */
 trait PatternOptionTrait
 {
@@ -19,7 +19,7 @@ trait PatternOptionTrait
 
     protected function getPattern(InputInterface $input): string
     {
-        $configPattern = isset($this->config) ? $this->config->pattern : '';
+        $configPattern = property_exists($this, 'config') ? $this->config->get('pattern') : '';
 
         return $input->getOption('pattern') ?? $configPattern;
     }

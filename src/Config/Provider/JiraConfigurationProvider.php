@@ -6,8 +6,8 @@ namespace duckpony\Config\Provider;
 
 use JiraRestApi\Configuration\ArrayConfiguration;
 use JiraRestApi\Configuration\ConfigurationInterface;
+use Laminas\Config\Config;
 use League\Container\ServiceProvider\AbstractServiceProvider;
-use Zend\Config\Config;
 
 class JiraConfigurationProvider extends AbstractServiceProvider
 {
@@ -15,11 +15,19 @@ class JiraConfigurationProvider extends AbstractServiceProvider
         ConfigurationInterface::class
     ];
 
+    public function provides(string $id): bool
+    {
+        return in_array($id, $this->provides);
+    }
+
     public function register(): void
     {
-        /** @var Config $config */
-        $config = $this->getLeagueContainer()->get(Config::class)->get(ConfigurationInterface::class);
+        /** @var \Laminas\Config\Config $config */
+        $config = $this->getContainer()->get(Config::class)->get(ConfigurationInterface::class);
 
-        $this->getLeagueContainer()->add(ConfigurationInterface::class, new ArrayConfiguration($config->toArray()));
+        $this->getContainer()->add(
+            ConfigurationInterface::class,
+            new ArrayConfiguration($config->toArray())
+        );
     }
 }

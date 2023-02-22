@@ -10,22 +10,32 @@ use Exception;
 use PDO;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\Exception\Call\UnexpectedCallException;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Prophet;
 use Psr\Log\LoggerInterface;
 
 class DropDatabaseUseCaseTest extends TestCase
 {
+    use ProphecyTrait;
+
     /**
      * @test
      */
     public function itShouldDoNothingWhenAttemptToDropBlacklistedDatabase(): void
     {
+        $pdoStatement = $this->prophesize(\PDOStatement::class);
+        $pdoStatement->execute()->willReturn(false);
+
         $pdo = $this->prophesize(PDO::class);
-        $pdo->prepare(Argument::any())->shouldNotBeCalled();
+        $pdo->prepare(Argument::any())->willReturn($pdoStatement);
 
         $pdoConnectionProvider = $this->prophesize(PDOConnectionProvider::class);
         $pdoConnectionProvider->getConnection()->willReturn($pdo->reveal());
 
         $logger = $this->prophesize(LoggerInterface::class);
+        $logger->critical(Argument::any())->shouldNotBeCalled();
 
         $useCase = new DropDatabaseUseCase($pdoConnectionProvider->reveal(), $logger->reveal());
         $useCase->execute('mysql');

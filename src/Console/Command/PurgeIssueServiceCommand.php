@@ -15,7 +15,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Finder\Finder;
 use icanhazstring\SystemCtl\SystemCtl;
 use icanhazstring\SystemCtl\Unit\Service;
-use Zend\Config\Config;
+use Laminas\Config\Config;
 
 class PurgeIssueServiceCommand extends Command
 {

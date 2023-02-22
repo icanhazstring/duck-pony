@@ -9,18 +9,24 @@ use Monolog\Handler\SlackHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
-use Zend\Config\Config;
+use Laminas\Config\Config;
 
 class LoggerProvider extends AbstractServiceProvider
 {
-    protected $provides = [
-        LoggerInterface::class
+    protected array $provides = [
+        LoggerInterface::class,
     ];
+
+    public function provides(string $id): bool
+    {
+        return in_array($id, $this->provides);
+    }
 
     public function register(): void
     {
+        $container = $this->getContainer();
         /** @var Config $config */
-        $config = $this->getContainer()->get(Config::class)->get(LoggerInterface::class);
+        $config = $container->get(Config::class)->get(LoggerInterface::class);
 
         $logger = new Logger('logger');
         $logger->pushHandler(new StreamHandler(fopen('php://stdout', 'wb')));
@@ -41,6 +47,6 @@ class LoggerProvider extends AbstractServiceProvider
             $logger->pushHandler($handler);
         }
 
-        $this->getLeagueContainer()->add(LoggerInterface::class, $logger);
+        $container->add(LoggerInterface::class, $logger);
     }
 }
